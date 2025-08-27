@@ -41,7 +41,7 @@ In short: **more customization, more control, and more creativity** 🎨.
 3. Star this repo ~ 😄
 
 ## Live Demo & Preview
-[![Demo](TypingSVG_DEMO2.gif)](https://typingsvg.vercel.app/)
+[![Demo](TypingSVG_DEMO.gif)](https://typingsvg.vercel.app/)
 site: https://typingsvg.vercel.app/
 
 ## Example Usage
