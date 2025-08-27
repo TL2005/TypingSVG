@@ -117,10 +117,11 @@ export async function GET(req: NextRequest) {
             const textBlockXOffset = params.center ? (params.width - textBlockWidth) / 2 : 15;
 
             const totalTypingDuration = totalGraphemeCount * params.typingSpeed;
+            const pauseDuration = (Number(searchParams.get('pause')) || params.pause) / 1000;
             // If not deleting, the content duration does not include deletion time
-            let contentCycleDuration = totalTypingDuration + params.pause / 1000 + (deleteAfter ? totalGraphemeCount * deleteSpeed : 0);
+            let contentCycleDuration = totalTypingDuration + pauseDuration + (deleteAfter ? totalGraphemeCount * deleteSpeed : 0);
             if (params.repeat && contents.length === 1 && !deleteAfter) {
-                contentCycleDuration += (params.pause / 1000);
+                contentCycleDuration += pauseDuration;
             }
 
             let cumulativeTypingTime = 0;
@@ -133,7 +134,7 @@ export async function GET(req: NextRequest) {
             const cursorYOffset = getCursorYOffset(params.cursorStyle, params.fontSize);
             const cursorXOffset = params.fontSize * 0.12;
 
-            const deleteStart = cycleOffset + totalTypingDuration + params.pause / 1000;
+            const deleteStart = cycleOffset + totalTypingDuration + pauseDuration;
             let globalCharIndex = 0;
 
             for (let i = 0; i < linesAsGraphemes.length; i++) {
@@ -163,7 +164,7 @@ export async function GET(req: NextRequest) {
                     // If not deleting character by character, add an animation to hide the whole block at once.
                     let hideBlockAnimation = '';
                     if (!deleteAfter) {
-                        const hideBegin = cycleOffset + totalTypingDuration + params.pause / 1000;
+                        const hideBegin = cycleOffset + totalTypingDuration + pauseDuration;
                         const hideBeginAttr = params.repeat ? `cycle.begin + ${hideBegin}s` : `${hideBegin}s`;
                         // Use `to="0"` and `fill="freeze"` to ensure it stays hidden until the next cycle reset.
                         hideBlockAnimation = `<animate attributeName="opacity" to="0" dur="0.01s" begin="${hideBeginAttr}" fill="freeze" />`;
@@ -210,7 +211,7 @@ export async function GET(req: NextRequest) {
             }
 
             if (deleteAfter && deletionXValues.length > 0) {
-                const deletionBeginRel = cycleOffset + totalTypingDuration + (params.pause / 1000);
+                const deletionBeginRel = cycleOffset + totalTypingDuration + pauseDuration;
                 const deletionBeginAttr = params.repeat ? `cycle.begin + ${deletionBeginRel}s` : `${deletionBeginRel}s`;
                 const deletionXValuesStr = deletionXValues.join(';');
                 const deletionYValuesStr = deletionYValues.join(';');
@@ -218,22 +219,27 @@ export async function GET(req: NextRequest) {
                 allCursorAnimations += `<animate attributeName="y" values="${deletionYValuesStr}" dur="${totalGraphemeCount * deleteSpeed}s" calcMode="discrete" begin="${deletionBeginAttr}" fill="freeze" />`;
             }
 
-            if (!deleteAfter) {
-                const hideBeginRel = cycleOffset + totalTypingDuration + (params.pause / 1000);
-                const hideBeginAttr = params.repeat ? `cycle.begin + ${hideBeginRel}s` : `${hideBeginRel}s`;
+            const deletionDuration = deleteAfter ? totalGraphemeCount * deleteSpeed : 0;
+            const transitionBegin = cycleOffset + totalTypingDuration + pauseDuration + deletionDuration;
+            const transitionBeginAttr = params.repeat ? `cycle.begin + ${transitionBegin}s` : `${transitionBegin}s`;
 
-                const currentContentIndex = contents.indexOf(content);
-                const nextContentIndex = (currentContentIndex + 1) % contents.length;
+            const currentContentIndex = contents.indexOf(content);
+            const nextContentIndex = (currentContentIndex + 1) % contents.length;
+            const isLast = currentContentIndex === contents.length - 1;
 
-                let targetCursorPos;
-                if (!params.repeat && nextContentIndex === 0) {
-                    targetCursorPos = calculateInitialCursorPos(content, false);
-                } else {
-                    targetCursorPos = calculateInitialCursorPos(contents[nextContentIndex], true);
-                }
+            if (!params.repeat && isLast) {
+                const targetCursorPos = calculateInitialCursorPos(content, false);
+                allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
+                allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
+            } else if (!deleteAfter){
+                const targetCursorPos = calculateInitialCursorPos(contents[nextContentIndex], false);
+                allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
+                allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
+            } else {
+                const targetCursorPos = calculateInitialCursorPos(contents[nextContentIndex], false);
+                allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" />`;
+                allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${transitionBeginAttr}" />`;
 
-                allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${hideBeginAttr}" />`;
-                allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${hideBeginAttr}" />`;
             }
             
             cycleOffset += contentCycleDuration;
