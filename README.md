@@ -89,7 +89,7 @@ A huge thank you for the original idea and foundation that made this possible �
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to open issues or PRs.
+We welcome contributions to Typing SVG! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for more details on how to get started, report bugs, request features, and submit pull requests.
 
 
 ## 📜 License
