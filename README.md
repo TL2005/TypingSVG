@@ -23,8 +23,8 @@
 </div>
 
 ## Live Demo & Preview
-
-
+![Demo](TypingSVG_DEMO2.gif)
+site: https://typingsvg.vercel.app/
 
 ## 🚀 Features
 
@@ -75,12 +75,6 @@ Customize it with query parameters:
 https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Monaco&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
 ```
 
-
-<!-- ## 💻 Deploy it your own
-It's recommended to deploy this on your own server.  This can have several benifits, such as...
-1. Signin to Vercel
-2. Click the following button
-3. ... -->
 
 ## ⚡ Technologies
 
