@@ -46,7 +46,9 @@ site: https://typingsvg.vercel.app/
 
 ## Example Usage
 Here are some usage examples:
+
 [![whiteSHADOW1234](https://github.com/whiteSHADOW1234.png?size=60)](https://github.com/whiteSHADOW1234 "whiteSHADOW1234")
+
 - Welcome to create a PR and add your's
 
 ## 🔧 Options
