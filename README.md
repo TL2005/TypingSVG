@@ -22,10 +22,6 @@
 </p>
 </div>
 
-## Live Demo & Preview
-![Demo](TypingSVG_DEMO2.gif)
-site: https://typingsvg.vercel.app/
-
 ## 🚀 Features
 
 There are other typing SVG projects out there — but this one takes it further:
@@ -44,6 +40,14 @@ In short: **more customization, more control, and more creativity** 🎨.
 2. Tap on the URL to copy it or press the download button to get the SVG image.
 3. Star this repo ~ 😄
 
+## Live Demo & Preview
+[![Demo](TypingSVG_DEMO2.gif)](https://typingsvg.vercel.app/)
+site: https://typingsvg.vercel.app/
+
+## Example Usage
+Here are some usage examples:
+[![whiteSHADOW1234](https://github.com/whiteSHADOW1234.png?size=60)](https://github.com/whiteSHADOW1234 "whiteSHADOW1234")
+- Welcome to create a PR and add your's
 
 ## 🔧 Options
 
@@ -74,16 +78,6 @@ Customize it with query parameters:
 ```
 https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Monaco&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
 ```
-
-
-## ⚡ Technologies
-
-- [Next.js](https://nextjs.org/) – React framework for production  
-- [React](https://reactjs.org/) – UI library  
-- [TypeScript](https://www.typescriptlang.org/) – Typed superset of JS  
-- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework  
-- [Lucide React](https://lucide.dev/) – Consistent icons  
-
 
 ## 🙏 Credits
 
