@@ -22,6 +22,10 @@
 </p>
 </div>
 
+## Live Demo & Preview
+
+
+
 ## 🚀 Features
 
 There are other typing SVG projects out there — but this one takes it further:
@@ -41,7 +45,7 @@ In short: **more customization, more control, and more creativity** 🎨.
 3. Star this repo ~ 😄
 
 
-## 🔧 API Usage
+## 🔧 Options
 
 The SVG is generated via the `/api/svg` endpoint.  
 Customize it with query parameters:
@@ -64,8 +68,19 @@ Customize it with query parameters:
 | `vCenter` | Center text vertically (`true`/`false`). | `true` |
 | `border` | Show a border (`true`/`false`). | `true` |
 | `cursorStyle` | Cursor style (`straight`, `underline`, `block`, `blank`). | `straight` |
-| `deleteAfter` | Delete text after typing (`true`/`false`). | `false` |
+| `deleteAfter` | Delete text after typing (`true`/`false`). | `true` |
 
+**Example:**  
+```
+https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Monaco&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
+```
+
+
+<!-- ## 💻 Deploy it your own
+It's recommended to deploy this on your own server.  This can have several benifits, such as...
+1. Signin to Vercel
+2. Click the following button
+3. ... -->
 
 ## ⚡ Technologies
 

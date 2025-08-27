@@ -19,7 +19,7 @@ export default function SVGGenerator() {
     const [vCenter, setVCenter] = useState(true);
     const [border, setBorder] = useState(true);
     const [cursorStyle, setCursorStyle] = useState('straight');
-    const [deleteAfter, setDeleteAfter] = useState(false);
+    const [deleteAfter, setDeleteAfter] = useState(true);
     const [deleteSpeed, setDeleteSpeed] = useState(typingSpeed);
     
     const [isDarkMode, setIsDarkMode] = useState(false);
