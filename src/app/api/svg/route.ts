@@ -231,10 +231,14 @@ export async function GET(req: NextRequest) {
                 const targetCursorPos = calculateInitialCursorPos(content, false);
                 allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
                 allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
-            } else if (!deleteAfter){
+            } else if (!params.repeat && !deleteAfter){
                 const targetCursorPos = calculateInitialCursorPos(contents[nextContentIndex], false);
                 allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
                 allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${transitionBeginAttr}" fill="freeze" />`;
+            } else if (params.repeat && !deleteAfter){
+                const targetCursorPos = calculateInitialCursorPos(contents[nextContentIndex], false);
+                allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" />`;
+                allCursorAnimations += `<animate attributeName="y" to="${targetCursorPos.y}" dur="0.01s" begin="${transitionBeginAttr}" />`;
             } else {
                 const targetCursorPos = calculateInitialCursorPos(contents[nextContentIndex], false);
                 allCursorAnimations += `<animate attributeName="x" to="${targetCursorPos.x}" dur="0.01s" begin="${transitionBeginAttr}" />`;
