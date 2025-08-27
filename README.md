@@ -1,31 +1,28 @@
-<div style="text-align: center;">
-  <p>
-    <h1>Typing SVG</h1>
-  </p>
-
+<p  align="center">
+  <h3 align="center">Typing SVG</h3>
+</p>
+  
+<p align="center">
   <img src="typing-svg.svg" alt="TypingSVG-quote" style="display: block; margin: 0 auto;">
-  &nbsp;&nbsp;
+</p>
 
-  <p>
+<p align="center">
     <a href="https://nextjs.org/">
         <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js">
     </a>
-    &nbsp;&nbsp;&nbsp;
     <a href="https://reactjs.org/">
         <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
     </a>
-    &nbsp;&nbsp;&nbsp;
     <a href="https://www.typescriptlang.org/">
         <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
     </a>
-    &nbsp;&nbsp;&nbsp;
     <a href="https://tailwindcss.com/">
         <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
     </a>
-  </p>
+</p>
 </div>
 
-## ✨ Why This Project?
+## 🚀 Features
 
 There are other typing SVG projects out there — but this one takes it further:
 
@@ -36,19 +33,6 @@ There are other typing SVG projects out there — but this one takes it further:
 - ✅ **Fine-grained control**: Letter spacing, pause duration, repeat toggle, borders, and more.  
 
 In short: **more customization, more control, and more creativity** 🎨.
-
-
-## 🚀 Features
-
-- **Multiple Text Lines**: Add multiple lines of text to be typed out.  
-- **Custom Fonts**: Use any font family you like.  
-- **Color Customization**: Change the text and background color.  
-- **Size Control**: Set the width and height of the SVG.  
-- **Animation Speed**: Control typing speed, deletion speed, and pause duration.  
-- **Looping**: Choose whether the animation should repeat.  
-- **Alignment**: Center the text horizontally and vertically.  
-- **Cursor Style**: Customize the look of the typing cursor.  
-- **And more**: Options for letter spacing, borders, and delete-after-typing effects.  
 
 
 ## 🛠 How to Use
