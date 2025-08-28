@@ -5,6 +5,7 @@ Thank you for your interest in contributing to Typing SVG! We appreciate your he
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Setup Environment](#setup-environment)
 - [How to Contribute](#how-to-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Requesting Features](#requesting-features)
@@ -18,7 +19,7 @@ To get a local copy of the project up and running, follow these steps:
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/typing-svg.git
+    git clone https://github.com/whiteSHADOW1234/typing-svg.git
     cd typing-svg
     ```
 
@@ -35,6 +36,16 @@ To get a local copy of the project up and running, follow these steps:
     ```
 
     This will start the development server at `http://localhost:3000`.
+
+## Setup Environment
+
+To ensure a consistent development environment, please make sure you have the following installed:
+
+-   **Node.js**: Version 18 or higher. You can download it from [nodejs.org](https://nodejs.org/).
+-   **npm**: Version 9 or higher (comes with Node.js).
+-   **Git**: For version control.
+
+It's recommended to use a Node.js version manager like `nvm` (Node Version Manager) to easily switch between Node.js versions.
 
 ## How to Contribute
 
@@ -61,6 +72,8 @@ If you have an idea for a new feature or enhancement, please open an issue on ou
     git checkout -b feat/your-feature-name
     # or
     git checkout -b fix/your-bug-fix-name
+    # or
+    git checkout -b chore/your-chore-name
     ```
 
 3.  **Make your changes** and ensure they adhere to the project's coding style.
@@ -71,7 +84,7 @@ If you have an idea for a new feature or enhancement, please open an issue on ou
     npm run lint
     ```
 
-5.  **Commit your changes** with a clear and concise commit message.
+5.  **Commit your changes** following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification. This helps with automated versioning and release notes.
 
 6.  **Push your branch** to your forked repository:
 
@@ -80,3 +93,48 @@ If you have an idea for a new feature or enhancement, please open an issue on ou
     ```
 
 7.  **Open a Pull Request** to the `main` branch of the original repository. Provide a detailed description of your changes.
+
+### Commit Guidelines
+
+This project adheres to the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification. This means your commit messages should follow a specific format, which helps in:
+
+-   **Automated Versioning:** Automatically determining the next version number (major, minor, or patch).
+-   **Generating Changelogs:** Creating clear and consistent release notes.
+-   **Better Readability:** Making the commit history easier to understand.
+
+**Commit Message Format:**
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+-   `feat`: A new feature
+-   `fix`: A bug fix
+-   `docs`: Documentation only changes
+-   `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semicolons, etc.)
+-   `refactor`: A code change that neither fixes a bug nor adds a feature
+-   `perf`: A code change that improves performance
+-   `test`: Adding missing tests or correcting existing tests
+-   `build`: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+-   `ci`: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+-   `chore`: Other changes that don't modify src or test files
+-   `revert`: Reverts a previous commit
+
+**Example:**
+
+```
+feat: add new option for cursor style
+
+This commit introduces a new `cursorStyle` option that allows users to choose
+between 'straight', 'underline', 'block', and 'blank' cursor styles.
+
+BREAKING CHANGE: The previous `cursor` parameter has been removed.
+```
+
+For more details, please refer to the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
