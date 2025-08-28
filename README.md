@@ -22,36 +22,51 @@
 </p>
 </div>
 
-## 🚀 Features
+## Features
 
 There are other typing SVG projects out there — but this one takes it further:
 
-- ✅ **Multi-line input**: Write multiple lines, not just one.  
-- ✅ **True text formatting**: Supports multiple spaces, line breaks, and precise alignment.  
-- ✅ **Flexible deletion**: Customize `deleteSpeed` and decide whether text should erase or not. 
-- ✅ **More cursor styles**: Straight, underline, block, or even blank.  
-- ✅ **Fine-grained control**: Letter spacing, pause duration, repeat toggle, borders, and more.  
+- **Multi-line input**: Write multiple lines, not just one.  
+- **True text formatting**: Supports multiple spaces, line breaks, and precise alignment.  
+- **Flexible deletion**: Customize `deleteSpeed` and decide whether text should erase or not. 
+- **More cursor styles**: Straight, underline, block, or even blank.  
+- **Fine-grained control**: Letter spacing, pause duration, repeat toggle, borders, and more.  
 
 In short: **more customization, more control, and more creativity** 🎨.
 
 
-## 🛠 How to Use
-1. Open the the site and customize your typing SVG file.
-2. Tap on the URL to copy it or press the download button to get the SVG image.
-3. Star this repo ~ 😄
-
 ## Live Demo & Preview
 [![Demo](TypingSVG_DEMO.gif)](https://typingsvg.vercel.app/)
-site: https://typingsvg.vercel.app/
+link: https://typingsvg.vercel.app/
+
+## How to Use
+1. Visit the site: [typingsvg.vercel.app](https://typingsvg.vercel.app/)
+2. Customize your SVG with text, speed, colors, and styles.
+3. Copy the URL or download the file, then use it anywhere (README, profile, blog, etc.).
+4. Star this repo ~ 😄
+
+## Deploy It Yourself
+Since this project is hosted on a free Vercel account, resources are limited. To ensure optimal performance and availability, it's recommended to deploy Typing SVG on your own. Here's how:
+
+1. Sign in or create a Vercel account at [vercel](https://vercel.com/).
+
+2. Click the "Deploy to Vercel" button below
+
+    [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FwhiteSHADOW1234%2FTypingSVG)
+
+3. Follow the prompts to deploy the application to your Vercel account.
+
+
 
 ## Example Usage
-Here are some usage examples:
+Here are some examples of how to use this project:
 
 [![whiteSHADOW1234](https://github.com/whiteSHADOW1234.png?size=60)](https://github.com/whiteSHADOW1234 "whiteSHADOW1234")
 
-- Welcome to create a PR and add your's
+- Feel free to open a pull request and add your own examples!
 
-## 🔧 Options
+
+## Options
 
 The SVG is generated via the `/api/svg` endpoint.  
 Customize it with query parameters:
@@ -81,17 +96,20 @@ Customize it with query parameters:
 https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Monaco&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
 ```
 
-## 🙏 Credits
+##  Credits & Inspiration
 
-This project was **inspired by** [readme-typing-svg](https://github.com/DenverCoder1/readme-typing-svg) by [DenverCoder1](https://github.com/DenverCoder1).  
-A huge thank you for the original idea and foundation that made this possible ❤️.
+This project stems from a deep admiration for [DenverCoder1’s readme-typing-svg](https://github.com/DenverCoder1/readme-typing-svg)
+—a clever, widely embraced tool that brought typing animations to README files. While using it, I encountered several limitations: the lack of genuine multi-line support, a fixed delete speed, and handling blank spaces felt awkward—requiring workarounds that disrupted the creative flow. That frustration sparked the idea for **Typing SVG**—a smoother, more flexible evolution designed to bring back control and clarity to formatting.
+
+A heartfelt, huge thank you to [DenverCoder1](https://github.com/DenverCoder1) for sparking the idea. Typing SVG builds upon that original spark. ❤️
 
 
-## 🤝 Contributing
+
+## Contributing
 
 We welcome contributions to Typing SVG! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for more details on how to get started, report bugs, request features, and submit pull requests.
 
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
