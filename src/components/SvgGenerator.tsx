@@ -1,31 +1,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Settings, Eye, Code, Palette, Plus, Minus, Download, Copy, Check } from 'lucide-react';
+import { Moon, Sun, Settings, Eye, Code, Palette, Plus, Minus, Download, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+
+interface TextLine {
+    text: string;
+    font: string;
+    color: string;
+    fontSize: number;
+    letterSpacing: number;
+    typingSpeed: number;
+    deleteSpeed: number;
+}
 
 export default function SVGGenerator() {
-    const [texts, setTexts] = useState(['Hello, World!', 'And Emojis! 😀🚀']);
-    const [font, setFont] = useState('Monaco');
-    const [color, setColor] = useState('#000000');
+    const [textLines, setTextLines] = useState<TextLine[]>([
+        { text: 'Hello, World!', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: 0.1, typingSpeed: 0.5, deleteSpeed: 0.5 },
+        { text: 'And Emojis! 😀🚀', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: 0.1, typingSpeed: 0.5, deleteSpeed: 0.5 }
+    ]);
+    
+    // Global settings
     const [width, setWidth] = useState(450);
     const [height, setHeight] = useState(150);
-    const [typingSpeed, setTypingSpeed] = useState(0.5);
     const [pause, setPause] = useState(1000);
-    const [letterSpacing, setLetterSpacing] = useState(0.1);
     const [repeat, setRepeat] = useState(true);
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-    const [fontSize, setFontSize] = useState(28);
     const [center, setCenter] = useState(true);
     const [vCenter, setVCenter] = useState(true);
     const [border, setBorder] = useState(true);
     const [cursorStyle, setCursorStyle] = useState('straight');
     const [deleteAfter, setDeleteAfter] = useState(true);
-    const [deleteSpeed, setDeleteSpeed] = useState(typingSpeed);
     
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [origin, setOrigin] = useState('');
     const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
     const [isLoading, setIsLoading] = useState(false);
+    const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set([0])); // First line expanded by default
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -38,10 +48,10 @@ export default function SVGGenerator() {
         setIsLoading(true);
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 300); // Small delay to show loading state
+        }, 300);
 
         return () => clearTimeout(timer);
-    }, [texts, font, color, width, height, typingSpeed, pause, letterSpacing, repeat, backgroundColor, fontSize, center, vCenter, border, cursorStyle, deleteAfter, deleteSpeed]);
+    }, [textLines, width, height, pause, repeat, backgroundColor, center, vCenter, border, cursorStyle, deleteAfter]);
 
     const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
         setNotification({ show: true, message, type });
@@ -50,43 +60,75 @@ export default function SVGGenerator() {
         }, 3000);
     };
 
-    const handleTextChange = (index: number, newText: string) => {
-        const newTexts = [...texts];
-        newTexts[index] = newText;
-        setTexts(newTexts);
+    const updateTextLine = (index: number, field: keyof TextLine, value: string | number) => {
+        const newTextLines = [...textLines];
+        newTextLines[index] = { ...newTextLines[index], [field]: value };
+        setTextLines(newTextLines);
     };
 
     const addTextLine = () => {
-        setTexts([...texts, '']);
+        const newLine: TextLine = {
+            text: '',
+            font: 'Monaco',
+            color: '#000000',
+            fontSize: 28,
+            letterSpacing: 0.1,
+            typingSpeed: 0.5,
+            deleteSpeed: 0.5
+        };
+        setTextLines([...textLines, newLine]);
+        // Expand the newly added line
+        setExpandedLines(prev => new Set([...prev, textLines.length]));
     };
 
     const removeTextLine = (index: number) => {
-        if (texts.length > 1) {
-            const newTexts = texts.filter((_, i) => i !== index);
-            setTexts(newTexts);
+        if (textLines.length > 1) {
+            const newTextLines = textLines.filter((_, i) => i !== index);
+            setTextLines(newTextLines);
+            // Remove from expanded lines and adjust indices
+            setExpandedLines(prev => {
+                const newExpanded = new Set<number>();
+                prev.forEach(lineIndex => {
+                    if (lineIndex < index) {
+                        newExpanded.add(lineIndex);
+                    } else if (lineIndex > index) {
+                        newExpanded.add(lineIndex - 1);
+                    }
+                });
+                return newExpanded;
+            });
         }
+    };
+
+    const toggleLineExpansion = (index: number) => {
+        setExpandedLines(prev => {
+            const newExpanded = new Set(prev);
+            if (newExpanded.has(index)) {
+                newExpanded.delete(index);
+            } else {
+                newExpanded.add(index);
+            }
+            return newExpanded;
+        });
     };
 
     const generateQueryString = () => {
         const params = new URLSearchParams({
-            text: texts.join(';'),
-            font,
-            color,
             width: String(width),
             height: String(height),
-            typingSpeed: String(typingSpeed),
             pause: String(pause),
-            letterSpacing: String(letterSpacing),
             repeat: String(repeat),
             backgroundColor,
-            fontSize: String(fontSize),
             center: String(center),
             vCenter: String(vCenter),
             border: String(border),
             cursorStyle,
             deleteAfter: String(deleteAfter),
-            deleteSpeed: String(deleteSpeed),
         });
+
+        // Add line-specific data
+        params.append('lines', JSON.stringify(textLines));
+
         return params.toString();
     };
 
@@ -169,11 +211,11 @@ export default function SVGGenerator() {
                         </div>
                         
                         <div className="space-y-5">
-                            {/* Text Content */}
+                            {/* Text Lines with Individual Controls */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Text Content
+                                        Text Lines
                                     </label>
                                     <button 
                                         onClick={addTextLine} 
@@ -187,194 +229,238 @@ export default function SVGGenerator() {
                                         Add Line
                                     </button>
                                 </div>
-                                {texts.map((text, index) => (
-                                    <div key={index} className="group relative">
-                                        <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
-                                            isDarkMode 
-                                                ? 'border-gray-700 bg-gray-800/50 focus-within:border-yellow-500 focus-within:bg-gray-800' 
-                                                : 'border-gray-200 bg-gray-50/50 focus-within:border-blue-500 focus-within:bg-white'
-                                        }`}>
+                                
+                                {textLines.map((line, index) => (
+                                    <div key={index} className={`group border rounded-lg transition-all duration-200 ${
+                                        isDarkMode 
+                                            ? 'border-gray-700 bg-gray-800/30' 
+                                            : 'border-gray-200 bg-gray-50/50'
+                                    }`}>
+                                        {/* Line Header */}
+                                        <div className={`flex items-center gap-3 p-3 cursor-pointer ${
+                                            isDarkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-100/50'
+                                        }`} onClick={() => toggleLineExpansion(index)}>
                                             <div className={`flex-shrink-0 px-2 py-1 rounded text-xs font-mono font-medium ${
                                                 isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-600'
                                             }`}>
                                                 {index + 1}
                                             </div>
-                                            <textarea
-                                                value={text}
-                                                onChange={(e) => handleTextChange(index, e.target.value)}
-                                                className={`flex-1 bg-transparent border-none outline-none resize-none text-sm ${
-                                                    isDarkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
-                                                }`}
-                                                placeholder={`Line ${index + 1}`}
-                                                rows={1}
-                                                style={{ minHeight: '20px' }}
-                                                onInput={(e) => {
-                                                    const target = e.target as HTMLTextAreaElement;
-                                                    target.style.height = 'auto';
-                                                    target.style.height = target.scrollHeight + 'px';
-                                                }}
-                                            />
-                                            {texts.length > 1 && (
-                                                <button
-                                                    onClick={() => removeTextLine(index)}
-                                                    className={`flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded transition-all duration-200 ${
-                                                        isDarkMode 
-                                                            ? 'text-red-400 hover:bg-red-900/20' 
-                                                            : 'text-red-500 hover:bg-red-100'
-                                                    }`}
-                                                >
-                                                    <Minus className="w-3 h-3" />
-                                                </button>
-                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`truncate text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    {line.text || `Line ${index + 1}`}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {textLines.length > 1 && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            removeTextLine(index);
+                                                        }}
+                                                        className={`p-1 rounded transition-all duration-200 ${
+                                                            isDarkMode 
+                                                                ? 'text-red-400 hover:bg-red-900/20' 
+                                                                : 'text-red-500 hover:bg-red-100'
+                                                        }`}
+                                                    >
+                                                        <Minus className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                                {expandedLines.has(index) ? (
+                                                    <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                                ) : (
+                                                    <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                                )}
+                                            </div>
                                         </div>
+                                        
+                                        {/* Expandable Line Settings */}
+                                        {expandedLines.has(index) && (
+                                            <div className={`border-t p-4 space-y-4 ${
+                                                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                                            }`}>
+                                                {/* Text Input */}
+                                                <div>
+                                                    <label className={`block text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                        Text Content
+                                                    </label>
+                                                    <textarea
+                                                        value={line.text}
+                                                        onChange={(e) => updateTextLine(index, 'text', e.target.value)}
+                                                        className={`flex w-full items-center px-3 py-2 text-sm rounded-lg border transition-all duration-200 resize-none ${
+                                                            isDarkMode 
+                                                                ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20' 
+                                                                : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20'
+                                                        }`}
+                                                        placeholder={`Line ${index + 1}`}
+                                                        rows={1}
+                                                        onInput={(e) => {
+                                                            const target = e.target as HTMLTextAreaElement;
+                                                            target.style.height = 'auto';
+                                                            target.style.height = target.scrollHeight + 'px';
+                                                        }}
+                                                    />
+                                                </div>
+                                                
+                                                {/* Font and Size */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <InputField 
+                                                        label="Font Family" 
+                                                        type="text" 
+                                                        value={line.font} 
+                                                        onChange={(e) => updateTextLine(index, 'font', e.target.value)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                    />
+                                                    <InputField 
+                                                        label="Font Size" 
+                                                        type="number" 
+                                                        value={line.fontSize} 
+                                                        onChange={(e) => updateTextLine(index, 'fontSize', parseInt(e.target.value, 10) || 0)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                    />
+                                                </div>
+                                                
+                                                {/* Color and Letter Spacing */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <ColorField 
+                                                        label="Text Color" 
+                                                        value={line.color} 
+                                                        onChange={(e) => updateTextLine(index, 'color', e.target.value)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                    />
+                                                    <InputField 
+                                                        label="Letter Spacing (em)" 
+                                                        type="number" 
+                                                        step="0.01"
+                                                        value={line.letterSpacing} 
+                                                        onChange={(e) => updateTextLine(index, 'letterSpacing', parseFloat(e.target.value) || 0)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                    />
+                                                </div>
+                                                
+                                                {/* Typing Speed and Delete Speed */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <InputField 
+                                                        label="Typing Speed (s/char)" 
+                                                        type="number" 
+                                                        step="0.01"
+                                                        value={line.typingSpeed} 
+                                                        onChange={(e) => updateTextLine(index, 'typingSpeed', parseFloat(e.target.value) || 0)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                    />
+                                                    <InputField 
+                                                        label="Delete Speed (s/char)" 
+                                                        type="number" 
+                                                        step="0.01"
+                                                        value={line.deleteSpeed} 
+                                                        onChange={(e) => updateTextLine(index, 'deleteSpeed', parseFloat(e.target.value) || 0)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Font Settings */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputField 
-                                    label="Font Size" 
-                                    type="number" 
-                                    value={fontSize} 
-                                    onChange={(e) => setFontSize(parseInt(e.target.value, 10) || 0)}
-                                    isDarkMode={isDarkMode}
-                                />
-                                <InputField 
-                                    label="Letter Spacing (em)" 
-                                    type="number" 
-                                    step="0.01"
-                                    value={letterSpacing} 
-                                    onChange={(e) => setLetterSpacing(parseFloat(e.target.value) || 0)}
-                                    isDarkMode={isDarkMode}
-                                />
-                            </div>
-
-                            <InputField 
-                                label="Font Family" 
-                                type="text" 
-                                value={font} 
-                                onChange={(e) => setFont(e.target.value)}
-                                isDarkMode={isDarkMode}
-                            />
-
-                            {/* Colors */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <ColorField 
-                                    label="Text Color" 
-                                    value={color} 
-                                    onChange={(e) => setColor(e.target.value)}
-                                    isDarkMode={isDarkMode}
-                                />
-                                <ColorField 
-                                    label="Background Color" 
-                                    value={backgroundColor} 
-                                    onChange={(e) => setBackgroundColor(e.target.value)}
-                                    isDarkMode={isDarkMode}
-                                />
-                            </div>
-
-                            {/* Cursor Style */}
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    Cursor Style
-                                </label>
-                                <select 
-                                    value={cursorStyle} 
-                                    onChange={(e) => setCursorStyle(e.target.value)} 
-                                    className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 ${
-                                        isDarkMode 
-                                            ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20' 
-                                            : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-                                    }`}
-                                >
-                                    <option value="straight">Straight</option>
-                                    <option value="underline">Underline</option>
-                                    <option value="block">Block</option>
-                                    <option value="blank">Blank (No Cursor)</option>
-                                </select>
-                            </div>
-
-                            {/* Dimensions */}
-                            <div className="grid grid-cols-2 gap-4"> 
-                                <InputField 
-                                    label="Width" 
-                                    type="number" 
-                                    value={width} 
-                                    onChange={(e) => setWidth(parseInt(e.target.value, 10) || 0)}
-                                    isDarkMode={isDarkMode}
-                                /> 
-                                <InputField 
-                                    label="Height" 
-                                    type="number" 
-                                    value={height} 
-                                    onChange={(e) => setHeight(parseInt(e.target.value, 10) || 0)}
-                                    isDarkMode={isDarkMode}
-                                /> 
-                            </div>
-
-                            {/* Animation Timing */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <InputField 
-                                    label="Typing Speed (s/char)" 
-                                    type="number" 
-                                    step="0.01"
-                                    value={typingSpeed} 
-                                    onChange={(e) => {
-                                        const newSpeed = parseFloat(e.target.value) || 0;
-                                        setTypingSpeed(newSpeed); 
-                                        setDeleteSpeed(newSpeed); 
-                                    }}
-                                    isDarkMode={isDarkMode}
-                                />
-                                <InputField 
-                                    label="End Pause (ms)" 
-                                    type="number" 
-                                    value={pause} 
-                                    onChange={(e) => setPause(parseInt(e.target.value, 10) || 0)}
-                                    isDarkMode={isDarkMode}
-                                />
-                            </div>
-
-                            {/* Layout Options */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <Checkbox label="Center Horizontally" checked={center} onChange={setCenter} isDarkMode={isDarkMode} />
-                                <Checkbox label="Center Vertically" checked={vCenter} onChange={setVCenter} isDarkMode={isDarkMode} />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <Checkbox label="Repeat Animation" checked={repeat} onChange={setRepeat} isDarkMode={isDarkMode} />
-                                <Checkbox label="Show SVG Border" checked={border} onChange={setBorder} isDarkMode={isDarkMode} />
-                            </div>
-
-                            {/* Delete Behavior */}
-                            <div className={`p-4 rounded-lg border ${isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/50'}`}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <label htmlFor="deleteAfter" className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Delete text after typing
-                                    </label>
-                                    <input 
-                                        id="deleteAfter" 
-                                        type="checkbox" 
-                                        checked={deleteAfter} 
-                                        onChange={(e) => setDeleteAfter(e.target.checked)} 
-                                        className={`h-4 w-4 rounded transition-colors ${
-                                            isDarkMode 
-                                                ? 'border-gray-600 text-yellow-500 focus:ring-yellow-500 bg-gray-700' 
-                                                : 'border-gray-300 text-blue-600 focus:ring-blue-500'
-                                        }`} 
-                                    />
-                                </div>
-                                {deleteAfter && (
+                            {/* Global Settings */}
+                            <div className={`border-t pt-5 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                <h3 className={`text-sm font-medium mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Global Settings
+                                </h3>
+                                
+                                {/* Dimensions */}
+                                <div className="grid grid-cols-2 gap-4 mb-4"> 
                                     <InputField 
-                                        label="Delete Speed (s/char)" 
+                                        label="Width" 
                                         type="number" 
-                                        step="0.01"
-                                        value={deleteSpeed} 
-                                        onChange={(e) => setDeleteSpeed(parseFloat(e.target.value) || 0)}
+                                        value={width} 
+                                        onChange={(e) => setWidth(parseInt(e.target.value, 10) || 0)}
+                                        isDarkMode={isDarkMode}
+                                    /> 
+                                    <InputField 
+                                        label="Height" 
+                                        type="number" 
+                                        value={height} 
+                                        onChange={(e) => setHeight(parseInt(e.target.value, 10) || 0)}
+                                        isDarkMode={isDarkMode}
+                                    /> 
+                                </div>
+
+                                {/* Background and Pause */}
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <ColorField 
+                                        label="Background Color" 
+                                        value={backgroundColor} 
+                                        onChange={(e) => setBackgroundColor(e.target.value)}
                                         isDarkMode={isDarkMode}
                                     />
-                                )}
+                                    <InputField 
+                                        label="End Pause (ms)" 
+                                        type="number" 
+                                        value={pause} 
+                                        onChange={(e) => setPause(parseInt(e.target.value, 10) || 0)}
+                                        isDarkMode={isDarkMode}
+                                    />
+                                </div>
+
+                                {/* Cursor Style */}
+                                <div className="mb-4">
+                                    <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Cursor Style
+                                    </label>
+                                    <select 
+                                        value={cursorStyle} 
+                                        onChange={(e) => setCursorStyle(e.target.value)} 
+                                        className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 ${
+                                            isDarkMode 
+                                                ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20' 
+                                                : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                                        }`}
+                                    >
+                                        <option value="straight">Straight</option>
+                                        <option value="underline">Underline</option>
+                                        <option value="block">Block</option>
+                                        <option value="blank">Blank (No Cursor)</option>
+                                    </select>
+                                </div>
+
+                                {/* Layout Options */}
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <Checkbox label="Center Horizontally" checked={center} onChange={setCenter} isDarkMode={isDarkMode} />
+                                    <Checkbox label="Center Vertically" checked={vCenter} onChange={setVCenter} isDarkMode={isDarkMode} />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <Checkbox label="Repeat Animation" checked={repeat} onChange={setRepeat} isDarkMode={isDarkMode} />
+                                    <Checkbox label="Show SVG Border" checked={border} onChange={setBorder} isDarkMode={isDarkMode} />
+                                </div>
+
+                                {/* Delete Behavior */}
+                                <div className={`p-4 rounded-lg border ${isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/50'}`}>
+                                    <div className="flex items-center justify-between">
+                                        <label htmlFor="deleteAfter" className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            Delete text after typing
+                                        </label>
+                                        <input 
+                                            id="deleteAfter" 
+                                            type="checkbox" 
+                                            checked={deleteAfter} 
+                                            onChange={(e) => setDeleteAfter(e.target.checked)} 
+                                            className={`h-4 w-4 rounded transition-colors ${
+                                                isDarkMode 
+                                                    ? 'border-gray-600 text-yellow-500 focus:ring-yellow-500 bg-gray-700' 
+                                                    : 'border-gray-300 text-blue-600 focus:ring-blue-500'
+                                            }`} 
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -470,6 +556,7 @@ const InputField = ({
     isDarkMode, 
     className = "", 
     step,
+    size = "normal",
     ...props 
 }: {
     label: string;
@@ -479,10 +566,11 @@ const InputField = ({
     isDarkMode: boolean;
     className?: string;
     step?: string;
+    size?: "normal" | "small";
     [key: string]: unknown;
 }) => (
     <div>
-        <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        <label className={`block font-medium mb-1 ${size === "small" ? "text-xs" : "text-sm"} ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             {label}
         </label>
         <input 
@@ -490,10 +578,12 @@ const InputField = ({
             step={step}
             value={value} 
             onChange={onChange} 
-            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 ${
+            className={`w-full px-3 rounded-lg border transition-all duration-200 ${
+                size === "small" ? "py-1.5 text-sm" : "py-2"
+            } ${
                 isDarkMode 
-                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20' 
+                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20'
             } ${className}`}
             {...props}
         />
@@ -504,15 +594,17 @@ const ColorField = ({
     label, 
     value, 
     onChange, 
-    isDarkMode 
+    isDarkMode,
+    size = "normal"
 }: {
     label: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     isDarkMode: boolean;
+    size?: "normal" | "small";
 }) => (
     <div>
-        <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        <label className={`block font-medium mb-1 ${size === "small" ? "text-xs" : "text-sm"} ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             {label}
         </label>
         <div className="relative">
@@ -520,13 +612,17 @@ const ColorField = ({
                 type="color" 
                 value={value} 
                 onChange={onChange} 
-                className={`w-full h-10 rounded-lg border cursor-pointer transition-all duration-200 ${
+                className={`w-full rounded-lg border cursor-pointer transition-all duration-200 ${
+                    size === "small" ? "h-8" : "h-10"
+                } ${
                     isDarkMode 
                         ? 'border-gray-600 bg-gray-800' 
                         : 'border-gray-300 bg-white'
                 }`}
             />
-            <div className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-xs font-mono ${
+            <div className={`absolute right-2 top-1/2 transform -translate-y-1/2 font-mono ${
+                size === "small" ? "text-xs" : "text-xs"
+            } ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-500'
             }`}>
                 {value}
