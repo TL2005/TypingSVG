@@ -26,6 +26,7 @@
 
 There are other typing SVG projects out there — but this one takes it further:
 
+- **Multi-line Customization**: Customize every line individually.
 - **Multi-line input**: Write multiple lines, not just one.  
 - **True text formatting**: Supports multiple spaces, line breaks, and precise alignment.  
 - **Flexible deletion**: Customize `deleteSpeed` and decide whether text should erase or not. 
