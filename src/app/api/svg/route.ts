@@ -131,7 +131,6 @@ export async function GET(req: NextRequest) {
         };
 
         let cycleOffset = 0;
-        let currentY = 0;
 
         for (let contentIndex = 0; contentIndex < textLines.length; contentIndex++) {
             const line = textLines[contentIndex];
