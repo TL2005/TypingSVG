@@ -8,11 +8,10 @@ interface TextLine {
     font: string;
     color: string;
     fontSize: number;
-    letterSpacing: number;
+    letterSpacing: string;
     typingSpeed: number;
     deleteSpeed: number;
 }
-
 
 interface GitHubStats {
     stars: number;
@@ -21,8 +20,8 @@ interface GitHubStats {
 
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
-        { text: 'Hello, World!', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: 0.1, typingSpeed: 0.5, deleteSpeed: 0.5 },
-        { text: 'And Emojis! 😀🚀', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: 0.1, typingSpeed: 0.5, deleteSpeed: 0.5 }
+        { text: 'Hello, World!', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 },
+        { text: 'And Emojis! 😀🚀', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 }
     ]);
     
     // Global settings
@@ -101,7 +100,7 @@ export default function SVGGenerator() {
             font: 'Monaco',
             color: '#000000',
             fontSize: 28,
-            letterSpacing: 0.1,
+            letterSpacing: '0.1em',
             typingSpeed: 0.5,
             deleteSpeed: 0.5
         };
@@ -204,7 +203,7 @@ export default function SVGGenerator() {
                 </div>
             </div>
 
-                        <div className="container mx-auto p-6">
+            <div className="container mx-auto p-6">
                 {/* Header with Dark Mode Toggle and GitHub Buttons */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
@@ -394,13 +393,13 @@ export default function SVGGenerator() {
                                                         size="small"
                                                     />
                                                     <InputField 
-                                                        label="Letter Spacing (em)" 
-                                                        type="number" 
-                                                        step="0.01"
+                                                        label="Letter Spacing" 
+                                                        type="text" 
                                                         value={line.letterSpacing} 
-                                                        onChange={(e) => updateTextLine(index, 'letterSpacing', parseFloat(e.target.value) || 0)}
+                                                        onChange={(e) => updateTextLine(index, 'letterSpacing', e.target.value)}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
+                                                        placeholder="0.1em, 2px, normal"
                                                     />
                                                 </div>
                                                 
@@ -619,6 +618,7 @@ const InputField = ({
     className = "", 
     step,
     size = "normal",
+    placeholder,
     ...props 
 }: {
     label: string;
@@ -629,6 +629,7 @@ const InputField = ({
     className?: string;
     step?: string;
     size?: "normal" | "small";
+    placeholder?: string;
     [key: string]: unknown;
 }) => (
     <div>
@@ -640,12 +641,13 @@ const InputField = ({
             step={step}
             value={value} 
             onChange={onChange} 
+            placeholder={placeholder}
             className={`w-full px-3 rounded-lg border transition-all duration-200 ${
                 size === "small" ? "py-1.5 text-sm" : "py-2"
             } ${
                 isDarkMode 
-                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20'
+                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 placeholder-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 placeholder-gray-400'
             } ${className}`}
             {...props}
         />

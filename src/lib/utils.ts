@@ -30,7 +30,7 @@ export function validateParams(params: URLSearchParams) {
             font: 'monospace',
             color: '#000000',
             typingSpeed: 0.5,
-            letterSpacing: 0.1,
+            letterSpacing: '0.1em', // Changed to string for CSS compatibility
             fontSize: 28,
             // Active fields for new format
             width,
@@ -53,7 +53,21 @@ export function validateParams(params: URLSearchParams) {
         const height = parseInt(params.get('height') || '150', 10);
         const typingSpeed = parseFloat(params.get('typingSpeed') || '0.5');
         const pause = parseInt(params.get('pause') || '1000', 10);
-        const letterSpacing = parseFloat(params.get('letterSpacing') || '0.1');
+        
+        // Handle letter spacing - can be string (CSS value) or number (treated as em)
+        const letterSpacingParam = params.get('letterSpacing') || '0.1';
+        let letterSpacing: string | number;
+        
+        // Check if it's a pure number (for backward compatibility)
+        const numericValue = parseFloat(letterSpacingParam);
+        if (!isNaN(numericValue) && letterSpacingParam === numericValue.toString()) {
+            // Pure number - treat as em value
+            letterSpacing = numericValue;
+        } else {
+            // String value - keep as is for CSS
+            letterSpacing = letterSpacingParam;
+        }
+        
         const repeat = params.get('repeat') === 'true';
         const backgroundColor = params.get('backgroundColor') || '#ffffff';
         const fontSize = parseInt(params.get('fontSize') || '28', 10);
@@ -63,7 +77,7 @@ export function validateParams(params: URLSearchParams) {
         const cursorStyle = params.get('cursorStyle') || 'straight';
         const fontRatio = parseFloat(params.get('fontRatio') || '0.6');
 
-        if ([width, height, typingSpeed, pause, letterSpacing, fontSize, fontRatio].some(isNaN)) {
+        if ([width, height, typingSpeed, pause, fontSize, fontRatio].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
 
@@ -75,7 +89,7 @@ export function validateParams(params: URLSearchParams) {
             height,
             typingSpeed,
             pause,
-            letterSpacing,
+            letterSpacing, // Now supports both string and number
             repeat,
             backgroundColor,
             fontSize,
