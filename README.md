@@ -75,7 +75,7 @@ Customize it with query parameters:
 | Parameter | Description | Default |
 |---|---|---|
 | `text` | Text to be typed. Use `;` to separate lines. | `Hello, World!;And Emojis! 😀🚀` |
-| `font` | Font family for the text. | `Monaco` |
+| `font` | Font family for the text. | `Courier Prime` |
 | `color` | Text color in hex format (without `#`). | `000000` |
 | `backgroundColor` | Background color in hex format (without `#`). | `ffffff` |
 | `width` | Width of the SVG. | `450` |
@@ -94,7 +94,7 @@ Customize it with query parameters:
 
 **Example:**  
 ```
-https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Monaco&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
+https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Courier%20Prime&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
 ```
 
 ##  Credits & Inspiration
