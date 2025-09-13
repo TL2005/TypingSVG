@@ -37,7 +37,7 @@ In short: **more customization, more control, and more creativity** 🎨.
 
 
 ## Live Demo & Preview
-[![Demo](https://github.com/user-attachments/assets/ef17fd2d-d22d-4cfc-b16d-b53501a826fc)](https://typingsvg.vercel.app/)
+[![Demo](https://github.com/user-attachments/assets/c7633619-3422-4066-9953-4e594ddd7b75)](https://typingsvg.vercel.app/)
 link: https://typingsvg.vercel.app/
 
 ## How to Use
