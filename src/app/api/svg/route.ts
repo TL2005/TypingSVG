@@ -79,14 +79,20 @@ function getCursorSvgShape(
   const yPos = getCursorYOffset(style, fontSize);
   switch (style) {
     case "underline":
-      return `<rect y="${yPos}" width="${fontSize * 0.6}" height="3" fill="${color}" visibility="hidden"/>`;
+      return `<rect y="${yPos}" width="${
+        fontSize * 0.6
+      }" height="3" fill="${color}" visibility="hidden"/>`;
     case "block":
-      return `<rect y="${yPos}" width="${fontSize * 0.6}" height="${fontSize * 1.2}" fill="${color}" visibility="hidden"/>`;
+      return `<rect y="${yPos}" width="${fontSize * 0.6}" height="${
+        fontSize * 1.2
+      }" fill="${color}" visibility="hidden"/>`;
     case "blank":
       return "";
     case "straight":
     default:
-      return `<rect y="${yPos}" width="2.5" height="${fontSize * 1.2}" fill="${color}" visibility="hidden"/>`;
+      return `<rect y="${yPos}" width="2.5" height="${
+        fontSize * 1.2
+      }" fill="${color}" visibility="hidden"/>`;
   }
 }
 
@@ -169,7 +175,8 @@ async function getGoogleFontsCSS(textLines: TextLine[]): Promise<string> {
   const uniqueChars = [...new Set(allText)].join("");
 
   const fontPromises = Array.from(uniqueFonts.entries()).map(
-    ([fontFamily, weight]) => fetchGoogleFontCSS(fontFamily, weight, uniqueChars)
+    ([fontFamily, weight]) =>
+      fetchGoogleFontCSS(fontFamily, weight, uniqueChars)
   );
 
   const fontCSSArray = await Promise.all(fontPromises);
@@ -442,7 +449,7 @@ export async function GET(req: NextRequest) {
       // For 'stay', deletionDuration remains 0
 
       // contentCycleDuration already includes one pause per content chunk (including last chunk)
-      let contentCycleDuration =
+      const contentCycleDuration =
         totalTypingDuration + pauseDuration + deletionDuration;
 
       let cumulativeTypingTime = 0;
@@ -477,8 +484,6 @@ export async function GET(req: NextRequest) {
             ? `cycle.begin + ${fmt(typingBegin)}s`
             : `${fmt(typingBegin)}s`;
 
-          // ---------- retain the earlier fix (reset first, then show)
-          // plus a tiny epsilon (0.001s) on the show to make ordering robust ----------
           let typingAnimation = "";
           if (params.repeat && deletionBehavior === "stay") {
             // Reset at the very start of each cycle, then show at its scheduled time + epsilon.
@@ -489,7 +494,6 @@ export async function GET(req: NextRequest) {
           } else {
             typingAnimation = `<animate attributeName="opacity" from="0" to="1" dur="0.01s" begin="${typingBeginAttr}" fill="freeze"/>`;
           }
-          // --------------------------------------------------------------------
 
           let deletionAnimation = "";
           let hideAnimation = "";
@@ -515,7 +519,9 @@ export async function GET(req: NextRequest) {
             // Text stays visible - only hide at the very end of ALL cycles for repeat mode
             if (params.repeat) {
               // Use precomputed allLinesTypingDuration (already includes pause after last line)
-              const hideBeginAttr = `cycle.begin + ${fmt(allLinesTypingDuration)}s`;
+              const hideBeginAttr = `cycle.begin + ${fmt(
+                allLinesTypingDuration
+              )}s`;
               hideAnimation = `<animate attributeName="opacity" to="0" dur="0.01s" begin="${hideBeginAttr}" fill="freeze"/>`;
             }
             // For non-repeat mode with 'stay', text remains visible permanently
