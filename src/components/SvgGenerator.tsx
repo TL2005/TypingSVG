@@ -18,10 +18,13 @@ interface GitHubStats {
     loading: boolean;
 }
 
+// New deletion behavior type
+type DeletionBehavior = 'stay' | 'backspace' | 'clear';
+
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
-        { text: 'Hello, World!', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 },
-        { text: 'And Emojis! 😀🚀', font: 'Monaco', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 }
+        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 },
+        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 }
     ]);
     
     // Global settings
@@ -34,7 +37,8 @@ export default function SVGGenerator() {
     const [vCenter, setVCenter] = useState(true);
     const [border, setBorder] = useState(true);
     const [cursorStyle, setCursorStyle] = useState('straight');
-    const [deleteAfter, setDeleteAfter] = useState(true);
+    // Updated deletion behavior - replaces deleteAfter boolean
+    const [deletionBehavior, setDeletionBehavior] = useState<DeletionBehavior>('backspace');
     
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [origin, setOrigin] = useState('');
@@ -79,7 +83,7 @@ export default function SVGGenerator() {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [textLines, width, height, pause, repeat, backgroundColor, center, vCenter, border, cursorStyle, deleteAfter]);
+    }, [textLines, width, height, pause, repeat, backgroundColor, center, vCenter, border, cursorStyle, deletionBehavior]);
 
     const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
         setNotification({ show: true, message, type });
@@ -97,7 +101,7 @@ export default function SVGGenerator() {
     const addTextLine = () => {
         const newLine: TextLine = {
             text: '',
-            font: 'Monaco',
+            font: 'Courier Prime',
             color: '#000000',
             fontSize: 28,
             letterSpacing: '0.1em',
@@ -151,7 +155,7 @@ export default function SVGGenerator() {
             vCenter: String(vCenter),
             border: String(border),
             cursorStyle,
-            deleteAfter: String(deleteAfter),
+            deletionBehavior,
         });
 
         // Add line-specific data
@@ -505,20 +509,39 @@ export default function SVGGenerator() {
 
                                 {/* Delete Behavior */}
                                 <div className={`p-4 rounded-lg border ${isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/50'}`}>
-                                    <div className="flex items-center justify-between">
-                                        <label htmlFor="deleteAfter" className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            Delete text after typing
-                                        </label>
-                                        <input 
-                                            id="deleteAfter" 
-                                            type="checkbox" 
-                                            checked={deleteAfter} 
-                                            onChange={(e) => setDeleteAfter(e.target.checked)} 
-                                            className={`h-4 w-4 rounded transition-colors ${
-                                                isDarkMode 
-                                                    ? 'border-gray-600 text-yellow-500 focus:ring-yellow-500 bg-gray-700' 
-                                                    : 'border-gray-300 text-blue-600 focus:ring-blue-500'
-                                            }`} 
+                                    <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Text Lifecycle
+                                    </label>
+                                    <div className="space-y-3">
+                                        <RadioOption
+                                            id="stay"
+                                            name="deletionBehavior"
+                                            value="stay"
+                                            checked={deletionBehavior === 'stay'}
+                                            onChange={() => setDeletionBehavior('stay')}
+                                            label="Stay after typing"
+                                            description="Text remains visible and next line appears below"
+                                            isDarkMode={isDarkMode}
+                                        />
+                                        <RadioOption
+                                            id="backspace"
+                                            name="deletionBehavior"
+                                            value="backspace"
+                                            checked={deletionBehavior === 'backspace'}
+                                            onChange={() => setDeletionBehavior('backspace')}
+                                            label="Delete character by character"
+                                            description="Text is deleted one character at a time after pause"
+                                            isDarkMode={isDarkMode}
+                                        />
+                                        <RadioOption
+                                            id="clear"
+                                            name="deletionBehavior"
+                                            value="clear"
+                                            checked={deletionBehavior === 'clear'}
+                                            onChange={() => setDeletionBehavior('clear')}
+                                            label="Clear instantly"
+                                            description="All text disappears at once after pause"
+                                            isDarkMode={isDarkMode}
                                         />
                                     </div>
                                 </div>
@@ -784,3 +807,48 @@ const UrlBox = ({
         </div>
     );
 };
+
+// Helper component for radio button options
+const RadioOption = ({ 
+    id, 
+    name, 
+    value, 
+    checked, 
+    onChange, 
+    label, 
+    description, 
+    isDarkMode 
+}: {
+    id: string;
+    name: string;
+    value: string;
+    checked: boolean;
+    onChange: () => void;
+    label: string;
+    description: string;
+    isDarkMode: boolean;
+}) => (
+    <div className="flex items-start gap-3">
+        <input 
+            id={id}
+            name={name}
+            type="radio" 
+            value={value}
+            checked={checked}
+            onChange={onChange}
+            className={`mt-1 h-4 w-4 transition-colors ${
+                isDarkMode 
+                    ? 'border-gray-600 text-yellow-500 focus:ring-yellow-500 bg-gray-700' 
+                    : 'border-gray-300 text-blue-600 focus:ring-blue-500'
+            }`} 
+        />
+        <div className="flex-1">
+            <label htmlFor={id} className={`block text-sm font-medium cursor-pointer ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                {label}
+            </label>
+            <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {description}
+            </p>
+        </div>
+    </div>
+);

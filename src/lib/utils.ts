@@ -20,6 +20,18 @@ export function validateParams(params: URLSearchParams) {
         const cursorStyle = params.get('cursorStyle') || 'straight';
         const fontRatio = parseFloat(params.get('fontRatio') || '0.6');
 
+        // Handle deletion behavior with backward compatibility
+        let deletionBehavior = 'backspace'; // default
+        const deletionParam = params.get('deletionBehavior');
+        const deleteAfterParam = params.get('deleteAfter'); // legacy parameter
+        
+        if (deletionParam && ['stay', 'backspace', 'clear'].includes(deletionParam)) {
+            deletionBehavior = deletionParam;
+        } else if (deleteAfterParam !== null) {
+            // Handle legacy deleteAfter parameter
+            deletionBehavior = deleteAfterParam === 'true' ? 'backspace' : 'stay';
+        }
+
         if ([width, height, pause, fontRatio].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
@@ -30,7 +42,7 @@ export function validateParams(params: URLSearchParams) {
             font: 'monospace',
             color: '#000000',
             typingSpeed: 0.5,
-            letterSpacing: '0.1em', // Changed to string for CSS compatibility
+            letterSpacing: '0.1em',
             fontSize: 28,
             // Active fields for new format
             width,
@@ -42,7 +54,8 @@ export function validateParams(params: URLSearchParams) {
             vCenter,
             border,
             cursorStyle,
-            fontRatio
+            fontRatio,
+            deletionBehavior
         };
     } else {
         // Old format for backward compatibility
@@ -77,6 +90,18 @@ export function validateParams(params: URLSearchParams) {
         const cursorStyle = params.get('cursorStyle') || 'straight';
         const fontRatio = parseFloat(params.get('fontRatio') || '0.6');
 
+        // Handle deletion behavior with backward compatibility for old format
+        let deletionBehavior = 'backspace'; // default
+        const deletionParam = params.get('deletionBehavior');
+        const deleteAfterParam = params.get('deleteAfter'); // legacy parameter
+        
+        if (deletionParam && ['stay', 'backspace', 'clear'].includes(deletionParam)) {
+            deletionBehavior = deletionParam;
+        } else if (deleteAfterParam !== null) {
+            // Handle legacy deleteAfter parameter
+            deletionBehavior = deleteAfterParam === 'true' ? 'backspace' : 'stay';
+        }
+
         if ([width, height, typingSpeed, pause, fontSize, fontRatio].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
@@ -89,7 +114,7 @@ export function validateParams(params: URLSearchParams) {
             height,
             typingSpeed,
             pause,
-            letterSpacing, // Now supports both string and number
+            letterSpacing,
             repeat,
             backgroundColor,
             fontSize,
@@ -97,7 +122,8 @@ export function validateParams(params: URLSearchParams) {
             vCenter,
             border,
             cursorStyle,
-            fontRatio
+            fontRatio,
+            deletionBehavior
         };
     }
 }

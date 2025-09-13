@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { validateParams } from '@/lib/utils';
+import { NextRequest, NextResponse } from "next/server";
+import { validateParams } from "@/lib/utils";
 
 interface TextLine {
   text: string;
@@ -11,38 +11,43 @@ interface TextLine {
   deleteSpeed: number;
 }
 
+type DeletionBehavior = "stay" | "backspace" | "clear";
+
 /**
  * Parse letter-spacing value and convert to pixels
  * Supports: em, rem, px, %, numbers (treated as em)
  */
-function parseLetterSpacing(letterSpacing: string | number, fontSize: number): number {
-  if (typeof letterSpacing === 'number') {
+function parseLetterSpacing(
+  letterSpacing: string | number,
+  fontSize: number
+): number {
+  if (typeof letterSpacing === "number") {
     return letterSpacing * fontSize; // Treat as em
   }
-  
+
   const value = letterSpacing.toString().trim().toLowerCase();
-  
+
   // Extract numeric value and unit
   const match = value.match(/^([+-]?\d*\.?\d+)(em|rem|px|%)?$/);
   if (!match) {
     // Handle special values
-    if (value === 'normal') return 0;
-    if (value === 'inherit') return 0;
+    if (value === "normal") return 0;
+    if (value === "inherit") return 0;
     // Default to 0 for invalid values
     return 0;
   }
-  
+
   const numValue = parseFloat(match[1]);
-  const unit = match[2] || 'em'; // Default to em if no unit
-  
+  const unit = match[2] || "em"; // Default to em if no unit
+
   switch (unit) {
-    case 'em':
+    case "em":
       return numValue * fontSize;
-    case 'rem':
+    case "rem":
       return numValue * 16; // Assume 16px root font size
-    case 'px':
+    case "px":
       return numValue;
-    case '%':
+    case "%":
       return (numValue / 100) * fontSize;
     default:
       return numValue * fontSize; // Fallback to em
@@ -53,29 +58,33 @@ function parseLetterSpacing(letterSpacing: string | number, fontSize: number): n
 // relative to the text baseline/center. Positive moves it down, negative moves it up.
 function getCursorYOffset(style: string, fontSize: number): number {
   switch (style) {
-    case 'underline':
+    case "underline":
       return fontSize * 0.45;
-    case 'block':
+    case "block":
       return -fontSize * 0.85;
-    case 'blank':
+    case "blank":
       return 0;
-    case 'straight':
+    case "straight":
     default:
       return -fontSize * 0.75;
   }
 }
 
 // Returns the svg rect string (still return the shape with a 'y' attribute – replaced later with animations)
-function getCursorSvgShape(style: string, color: string, fontSize: number): string {
+function getCursorSvgShape(
+  style: string,
+  color: string,
+  fontSize: number
+): string {
   const yPos = getCursorYOffset(style, fontSize);
   switch (style) {
-    case 'underline':
+    case "underline":
       return `<rect y="${yPos}" width="${fontSize * 0.6}" height="3" fill="${color}" visibility="hidden"/>`;
-    case 'block':
+    case "block":
       return `<rect y="${yPos}" width="${fontSize * 0.6}" height="${fontSize * 1.2}" fill="${color}" visibility="hidden"/>`;
-    case 'blank':
-      return '';
-    case 'straight':
+    case "blank":
+      return "";
+    case "straight":
     default:
       return `<rect y="${yPos}" width="2.5" height="${fontSize * 1.2}" fill="${color}" visibility="hidden"/>`;
   }
@@ -84,19 +93,24 @@ function getCursorSvgShape(style: string, color: string, fontSize: number): stri
 /**
  * Fetch Google Font CSS and convert font URLs to base64 data URIs
  */
-async function fetchGoogleFontCSS(fontFamily: string, weight: string = '400', text: string = ''): Promise<string> {
+async function fetchGoogleFontCSS(
+  fontFamily: string,
+  weight: string = "400",
+  text: string = ""
+): Promise<string> {
   try {
     const url = `https://fonts.googleapis.com/css2?${new URLSearchParams({
       family: `${fontFamily}:wght@${weight}`,
       text: text,
-      display: 'fallback'
+      display: "fallback",
     })}`;
 
     // Fetch the CSS
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
     });
 
     if (!response.ok) {
@@ -106,20 +120,21 @@ async function fetchGoogleFontCSS(fontFamily: string, weight: string = '400', te
     let css = await response.text();
 
     // Find all font file URLs and convert them to base64 data URIs
-    const urlRegex = /url\((https:\/\/fonts\.gstatic\.com[^)]+)\)\s+format\(['"]([^'"]+)['"]\)/g;
+    const urlRegex =
+      /url\((https:\/\/fonts\.gstatic\.com[^)]+)\)\s+format\(['"]([^'"]+)['"]\)/g;
     const matches = [...css.matchAll(urlRegex)];
 
     for (const match of matches) {
       const [fullMatch, fontUrl, fontFormat] = match;
-      
+
       try {
         // Fetch the font file
         const fontResponse = await fetch(fontUrl);
         if (fontResponse.ok) {
           const fontBuffer = await fontResponse.arrayBuffer();
-          const base64Font = Buffer.from(fontBuffer).toString('base64');
+          const base64Font = Buffer.from(fontBuffer).toString("base64");
           const dataUri = `data:font/${fontFormat};base64,${base64Font}`;
-          
+
           // Replace the original URL with the data URI
           css = css.replace(fontUrl, dataUri);
         }
@@ -131,7 +146,7 @@ async function fetchGoogleFontCSS(fontFamily: string, weight: string = '400', te
     return css;
   } catch (error) {
     console.warn(`Failed to fetch Google Font: ${fontFamily}`, error);
-    return '';
+    return "";
   }
 }
 
@@ -140,25 +155,25 @@ async function fetchGoogleFontCSS(fontFamily: string, weight: string = '400', te
  */
 async function getGoogleFontsCSS(textLines: TextLine[]): Promise<string> {
   const uniqueFonts = new Map<string, string>();
-  let allText = '';
+  let allText = "";
 
   // Collect unique fonts and all text
   for (const line of textLines) {
     if (!uniqueFonts.has(line.font)) {
-      uniqueFonts.set(line.font, '400'); // Default weight
+      uniqueFonts.set(line.font, "400"); // Default weight
     }
     allText += line.text;
   }
 
   // Remove duplicates from text for optimization
-  const uniqueChars = [...new Set(allText)].join('');
+  const uniqueChars = [...new Set(allText)].join("");
 
-  const fontPromises = Array.from(uniqueFonts.entries()).map(([fontFamily, weight]) =>
-    fetchGoogleFontCSS(fontFamily, weight, uniqueChars)
+  const fontPromises = Array.from(uniqueFonts.entries()).map(
+    ([fontFamily, weight]) => fetchGoogleFontCSS(fontFamily, weight, uniqueChars)
   );
 
   const fontCSSArray = await Promise.all(fontPromises);
-  return fontCSSArray.filter(css => css.length > 0).join('\n');
+  return fontCSSArray.filter((css) => css.length > 0).join("\n");
 }
 
 export async function GET(req: NextRequest) {
@@ -167,17 +182,30 @@ export async function GET(req: NextRequest) {
     const { searchParams } = url;
     const params = validateParams(searchParams);
 
-    const deleteAfter = searchParams.get('deleteAfter') === 'true';
+    // Get deletion behavior from URL parameters - with backward compatibility
+    let deletionBehavior: DeletionBehavior = "backspace"; // default
+    const deletionParam = searchParams.get("deletionBehavior");
+    const deleteAfterParam = searchParams.get("deleteAfter"); // legacy parameter
+
+    if (
+      deletionParam &&
+      ["stay", "backspace", "clear"].includes(deletionParam)
+    ) {
+      deletionBehavior = deletionParam as DeletionBehavior;
+    } else if (deleteAfterParam !== null) {
+      // Handle legacy deleteAfter parameter
+      deletionBehavior = deleteAfterParam === "true" ? "backspace" : "stay";
+    }
 
     // Parse text lines data
     let textLines: TextLine[];
     try {
-      const linesParam = searchParams.get('lines');
+      const linesParam = searchParams.get("lines");
       if (linesParam) {
         textLines = JSON.parse(linesParam) as TextLine[];
       } else {
         // Fallback to old format for backward compatibility
-        const texts = params.text.split(';');
+        const texts = params.text.split(";");
         textLines = texts.map((text) => ({
           text,
           font: params.font,
@@ -189,7 +217,10 @@ export async function GET(req: NextRequest) {
         }));
       }
     } catch (error) {
-      return new NextResponse(JSON.stringify({ error: 'Invalid lines parameter' }), { status: 400 });
+      return new NextResponse(
+        JSON.stringify({ error: "Invalid lines parameter" }),
+        { status: 400 }
+      );
     }
 
     // Fetch Google Fonts CSS
@@ -203,14 +234,20 @@ export async function GET(req: NextRequest) {
 
     let overallCycleDuration = 0;
     const allTextElements: string[] = [];
-    let allCursorAnimations = '';
+    let allCursorAnimations = "";
 
     const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
-    
+
     /**
      * Get character width with better handling for emojis and monospace
      */
-    const getGraphemeWidth = (grapheme: string, fontSize: number, fontRatio: number, isLastChar: boolean, letterSpacingPx: number): { charWidth: number; totalWidth: number } => {
+    const getGraphemeWidth = (
+      grapheme: string,
+      fontSize: number,
+      fontRatio: number,
+      isLastChar: boolean,
+      letterSpacingPx: number
+    ): { charWidth: number; totalWidth: number } => {
       const isEmoji = emojiRegex.test(grapheme);
       if (isEmoji) {
         const charWidth = fontSize;
@@ -218,17 +255,13 @@ export async function GET(req: NextRequest) {
         return { charWidth, totalWidth };
       }
 
-
       // Heuristic-based advance width estimation for proportional fonts.
-      // We avoid relying on a single fixed ratio 
-      // and instead bias by character shape so capitals & wide glyphs don't overlap.
-      const veryWideChars = /[MW]/;                      // “M”, “W” (broad caps)
-      const wideChars     = /[O@#%&<>]/;               // “O” and selected symbols
-      const narrowChars   = /[ilI,.;!:\'\"`\|\/\(\)\[\]{}?]/;  // “i, l, I” and thin marks (.,;:!)
-      const upper         = /[A-Z]/;                    // uppercase letters
-      const digit         = /[0-9]/;                    // digits
-      const punctuation   = /[-_=+\*~^]/;               // other punctuation (unchanged)
-
+      const veryWideChars = /[MW]/;
+      const wideChars = /[O@#%&<>]/;
+      const narrowChars = /[ilI,.;!:'"`\|\/\(\)\[\]{}?]/;
+      const upper = /[A-Z]/;
+      const digit = /[0-9]/;
+      const punctuation = /[-_=+\*~^]/;
 
       // base multiplier derived from fontRatio but allow adjustments
       let multiplier = fontRatio;
@@ -249,27 +282,32 @@ export async function GET(req: NextRequest) {
         multiplier *= 1.0;
       }
 
-
-
       // compute width and enforce a sensible minimum advance to prevent overlap
       const charWidth = Math.max(fontSize * multiplier, fontSize * 0.25);
       const totalWidth = charWidth + (isLastChar ? 0 : letterSpacingPx);
 
-
       return { charWidth, totalWidth };
     };
 
-    const calculateInitialCursorPos = (textLines: TextLine[], contentIndex: number, afterFirstLetter: boolean) => {
+    /**
+     * Calculate the total dimensions of all text lines for proper centering
+     */
+    function calculateTotalTextDimensions(
+      textLines: TextLine[],
+      fontRatio: number,
+      deletionBehavior: DeletionBehavior
+    ) {
       let totalHeight = 0;
       let maxWidth = 0;
 
-      // Calculate text block dimensions
-      for (let i = 0; i < textLines.length; i++) {
-        const line = textLines[i];
+      for (const line of textLines) {
         const content = line.text;
-        const lines = content.split('\n');
+        const lines = content.split("\n");
         const lineHeight = line.fontSize * 1.3;
-        const letterSpacingPx = parseLetterSpacing(line.letterSpacing, line.fontSize);
+        const letterSpacingPx = parseLetterSpacing(
+          line.letterSpacing,
+          line.fontSize
+        );
 
         for (const textLine of lines) {
           let lineWidth = 0;
@@ -277,77 +315,135 @@ export async function GET(req: NextRequest) {
             const graphemes = [...textLine];
             graphemes.forEach((grapheme, idx) => {
               const isLastChar = idx === graphemes.length - 1;
-              const { totalWidth } = getGraphemeWidth(grapheme, line.fontSize, params.fontRatio, isLastChar, letterSpacingPx);
+              const { totalWidth } = getGraphemeWidth(
+                grapheme,
+                line.fontSize,
+                fontRatio,
+                isLastChar,
+                letterSpacingPx
+              );
               lineWidth += totalWidth;
             });
           }
           maxWidth = Math.max(maxWidth, lineWidth);
-          totalHeight += lineHeight;
+        }
+
+        // For 'stay' behavior, accumulate height. For others, use max height
+        if (deletionBehavior === "stay") {
+          totalHeight += lines.length * lineHeight;
+        } else {
+          totalHeight = Math.max(totalHeight, lines.length * lineHeight);
         }
       }
 
-      const textBlockYOffset = params.vCenter ? (params.height - totalHeight) / 2 : 10;
-      const textBlockXOffset = params.center ? (params.width - maxWidth) / 2 : 15;
+      return { totalWidth: maxWidth, totalHeight };
+    }
 
-      // Get the first line's font size for cursor positioning
-      const firstLine = textLines[contentIndex];
-      const cursorXOffset = firstLine.fontSize * 0.12;
-      const cursorYOffset = getCursorYOffset(params.cursorStyle, firstLine.fontSize);
+    // Calculate total dimensions for proper centering when using 'stay' behavior
+    const totalDimensions = calculateTotalTextDimensions(
+      textLines,
+      params.fontRatio,
+      deletionBehavior
+    );
+    const globalTextBlockYOffset = params.vCenter
+      ? (params.height - totalDimensions.totalHeight) / 2
+      : 10;
+    const globalTextBlockXOffset = params.center
+      ? (params.width - totalDimensions.totalWidth) / 2
+      : 15;
 
-      let initialX = textBlockXOffset + cursorXOffset;
+    // compute pause duration once (seconds) and use grapheme-aware counting
+    const pauseDuration =
+      (Number(searchParams.get("pause")) || params.pause) / 1000;
 
-      if (afterFirstLetter && firstLine.text.length > 0) {
-        const firstGrapheme = [...firstLine.text][0];
-        const letterSpacingPx = parseLetterSpacing(firstLine.letterSpacing, firstLine.fontSize);
-        const { charWidth } = getGraphemeWidth(firstGrapheme, firstLine.fontSize, params.fontRatio, false, letterSpacingPx);
-        initialX += charWidth;
-      }
-
-      return {
-        x: initialX,
-        y: textBlockYOffset + firstLine.fontSize * 1.3 / 2 + cursorYOffset,
-      };
-    };
+    // total time (relative to cycle.begin) after which ALL lines have finished typing,
+    // INCLUDING the pause after the last line. Use grapheme-aware count.
+    const allLinesTypingDuration = textLines.reduce((total, tl) => {
+      const tlGraphemeCount = [...tl.text].length;
+      return total + tlGraphemeCount * tl.typingSpeed + pauseDuration;
+    }, 0);
 
     let cycleOffset = 0;
+    let accumulatedHeight = 0; // Track cumulative height for 'stay' behavior
 
-    for (let contentIndex = 0; contentIndex < textLines.length; contentIndex++) {
+    for (
+      let contentIndex = 0;
+      contentIndex < textLines.length;
+      contentIndex++
+    ) {
       const line = textLines[contentIndex];
       const content = line.text;
-      const lines = content.split('\n');
+      const lines = content.split("\n");
       const linesAsGraphemes = lines.map((ln) => [...ln]);
-      const totalGraphemeCount = linesAsGraphemes.reduce((sum, ln) => sum + ln.length, 0);
+      const totalGraphemeCount = linesAsGraphemes.reduce(
+        (sum, ln) => sum + ln.length,
+        0
+      );
 
       const lineHeight = line.fontSize * 1.3;
-      const letterSpacingPx = parseLetterSpacing(line.letterSpacing, line.fontSize);
+      const letterSpacingPx = parseLetterSpacing(
+        line.letterSpacing,
+        line.fontSize
+      );
 
       const lineCalculations = linesAsGraphemes.map((textLine) => {
         let cumulativeWidth = 0;
         if (textLine.length > 0) {
           textLine.forEach((grapheme, idx) => {
             const isLastChar = idx === textLine.length - 1;
-            const { totalWidth } = getGraphemeWidth(grapheme, line.fontSize, params.fontRatio, isLastChar, letterSpacingPx);
+            const { totalWidth } = getGraphemeWidth(
+              grapheme,
+              line.fontSize,
+              params.fontRatio,
+              isLastChar,
+              letterSpacingPx
+            );
             cumulativeWidth += totalWidth;
           });
         }
         return { width: cumulativeWidth };
       });
 
-      const textBlockWidth = Math.max(0, ...lineCalculations.map((lc) => lc.width));
+      const textBlockWidth = Math.max(
+        0,
+        ...lineCalculations.map((lc) => lc.width)
+      );
       const textBlockHeight = lines.length * lineHeight;
 
-      // Calculate positioning for this content block
-      const textBlockYOffset = params.vCenter ? (params.height - textBlockHeight) / 2 : 10;
-      const textBlockXOffset = params.center ? (params.width - textBlockWidth) / 2 : 15;
+      // Calculate positioning based on deletion behavior
+      let textBlockYOffset: number;
+      let textBlockXOffset: number;
+
+      if (deletionBehavior === "stay") {
+        // For 'stay', use global positioning with accumulated height
+        textBlockYOffset = globalTextBlockYOffset + accumulatedHeight;
+        textBlockXOffset = params.center
+          ? (params.width - textBlockWidth) / 2
+          : globalTextBlockXOffset;
+      } else {
+        // For 'backspace' and 'clear', each line uses the same position
+        textBlockYOffset = params.vCenter
+          ? (params.height - textBlockHeight) / 2
+          : 10;
+        textBlockXOffset = params.center
+          ? (params.width - textBlockWidth) / 2
+          : 15;
+      }
 
       const totalTypingDuration = totalGraphemeCount * line.typingSpeed;
-      const pauseDuration = (Number(searchParams.get('pause')) || params.pause) / 1000;
-      const deletionDuration = deleteAfter ? totalGraphemeCount * line.deleteSpeed : 0;
 
-      let contentCycleDuration = totalTypingDuration + pauseDuration + deletionDuration;
-      if (params.repeat && textLines.length === 1 && !deleteAfter) {
-        contentCycleDuration += pauseDuration;
+      // Calculate deletion duration based on behavior
+      let deletionDuration = 0;
+      if (deletionBehavior === "backspace") {
+        deletionDuration = totalGraphemeCount * line.deleteSpeed;
+      } else if (deletionBehavior === "clear") {
+        deletionDuration = 0.01; // Instant clear
       }
+      // For 'stay', deletionDuration remains 0
+
+      // contentCycleDuration already includes one pause per content chunk (including last chunk)
+      let contentCycleDuration =
+        totalTypingDuration + pauseDuration + deletionDuration;
 
       let cumulativeTypingTime = 0;
       const afterCharX: number[] = [];
@@ -367,38 +463,75 @@ export async function GET(req: NextRequest) {
         const textLine = linesAsGraphemes[i];
         const lineYCenter = textBlockYOffset + i * lineHeight + lineHeight / 2;
         const lineWidth = lineCalculations[i].width;
-        const lineStartX = params.center ? centerX - lineWidth / 2 : textBlockXOffset;
+        const lineStartX = params.center
+          ? centerX - lineWidth / 2
+          : textBlockXOffset;
 
         let currentX = 0; // relative offset used for computing x position per grapheme
-        let tspanElements = '';
+        let tspanElements = "";
 
         for (let j = 0; j < textLine.length; j++) {
           const grapheme = textLine[j];
           const typingBegin = cycleOffset + cumulativeTypingTime;
-          const typingBeginAttr = params.repeat ? `cycle.begin + ${fmt(typingBegin)}s` : `${fmt(typingBegin)}s`;
+          const typingBeginAttr = params.repeat
+            ? `cycle.begin + ${fmt(typingBegin)}s`
+            : `${fmt(typingBegin)}s`;
 
-          const typingAnimation = `<animate attributeName="opacity" from="0" to="1" dur="0.01s" begin="${typingBeginAttr}" fill="freeze"/>`;
-
-          let deletionAnimation = '';
-          if (deleteAfter && totalGraphemeCount > 0) {
-            const deletionOrderIndex = totalGraphemeCount - 1 - globalCharIndex;
-            const deletionBegin = deleteStart + deletionOrderIndex * line.deleteSpeed;
-            const deletionBeginAttr = params.repeat ? `cycle.begin + ${fmt(deletionBegin)}s` : `${fmt(deletionBegin)}s`;
-            deletionAnimation = `<animate attributeName="opacity" from="1" to="0" dur="0.01s" begin="${deletionBeginAttr}" fill="freeze"/>`;
+          // ---------- retain the earlier fix (reset first, then show)
+          // plus a tiny epsilon (0.001s) on the show to make ordering robust ----------
+          let typingAnimation = "";
+          if (params.repeat && deletionBehavior === "stay") {
+            // Reset at the very start of each cycle, then show at its scheduled time + epsilon.
+            const resetAnim = `<animate attributeName="opacity" to="0" dur="0s" begin="cycle.begin" fill="freeze"/>`;
+            const showBegin = `cycle.begin + ${fmt(typingBegin + 0.001)}s`; // tiny offset to avoid tie
+            const showAnim = `<animate attributeName="opacity" values="0;1" dur="0.01s" begin="${showBegin}" fill="freeze"/>`;
+            typingAnimation = resetAnim + showAnim;
+          } else {
+            typingAnimation = `<animate attributeName="opacity" from="0" to="1" dur="0.01s" begin="${typingBeginAttr}" fill="freeze"/>`;
           }
+          // --------------------------------------------------------------------
 
-          let hideBlockAnimation = '';
-          if (!deleteAfter) {
-            const hideBegin = cycleOffset + totalTypingDuration + pauseDuration;
-            const hideBeginAttr = params.repeat ? `cycle.begin + ${fmt(hideBegin)}s` : `${fmt(hideBegin)}s`;
-            hideBlockAnimation = `<animate attributeName="opacity" to="0" dur="0.01s" begin="${hideBeginAttr}" fill="freeze"/>`;
+          let deletionAnimation = "";
+          let hideAnimation = "";
+
+          // Handle different deletion behaviors
+          if (deletionBehavior === "backspace" && totalGraphemeCount > 0) {
+            // Character-by-character deletion (original behavior)
+            const deletionOrderIndex = totalGraphemeCount - 1 - globalCharIndex;
+            const deletionBegin =
+              deleteStart + deletionOrderIndex * line.deleteSpeed;
+            const deletionBeginAttr = params.repeat
+              ? `cycle.begin + ${fmt(deletionBegin)}s`
+              : `${fmt(deletionBegin)}s`;
+            deletionAnimation = `<animate attributeName="opacity" from="1" to="0" dur="0.01s" begin="${deletionBeginAttr}" fill="freeze"/>`;
+          } else if (deletionBehavior === "clear") {
+            // Instant clear all text at once
+            const clearBegin = deleteStart;
+            const clearBeginAttr = params.repeat
+              ? `cycle.begin + ${fmt(clearBegin)}s`
+              : `${fmt(clearBegin)}s`;
+            deletionAnimation = `<animate attributeName="opacity" from="1" to="0" dur="0.01s" begin="${clearBeginAttr}" fill="freeze"/>`;
+          } else if (deletionBehavior === "stay") {
+            // Text stays visible - only hide at the very end of ALL cycles for repeat mode
+            if (params.repeat) {
+              // Use precomputed allLinesTypingDuration (already includes pause after last line)
+              const hideBeginAttr = `cycle.begin + ${fmt(allLinesTypingDuration)}s`;
+              hideAnimation = `<animate attributeName="opacity" to="0" dur="0.01s" begin="${hideBeginAttr}" fill="freeze"/>`;
+            }
+            // For non-repeat mode with 'stay', text remains visible permanently
           }
 
           const isLastGraphemeOfLine = j === textLine.length - 1;
-          const { charWidth, totalWidth } = getGraphemeWidth(grapheme, line.fontSize, params.fontRatio, isLastGraphemeOfLine, letterSpacingPx);
+          const { charWidth, totalWidth } = getGraphemeWidth(
+            grapheme,
+            line.fontSize,
+            params.fontRatio,
+            isLastGraphemeOfLine,
+            letterSpacingPx
+          );
 
           const xForThisGrapheme = fmt(lineStartX + currentX);
-          tspanElements += `<tspan x="${xForThisGrapheme}" opacity="0">${grapheme}${typingAnimation}${deletionAnimation}${hideBlockAnimation}</tspan>`;
+          tspanElements += `<tspan x="${xForThisGrapheme}" opacity="0">${grapheme}${typingAnimation}${deletionAnimation}${hideAnimation}</tspan>`;
 
           beforeCharX.push(lineStartX + currentX);
           beforeCharY.push(lineYCenter);
@@ -413,94 +546,239 @@ export async function GET(req: NextRequest) {
         }
 
         // Create text element with proper letter-spacing CSS value
-        const letterSpacingCSS = typeof line.letterSpacing === 'number' ? 
-          `${line.letterSpacing}em` : 
-          line.letterSpacing.toString();
-        
-        const textStyle = `font-family:'${line.font}',monospace;font-size:${fmt(line.fontSize)}px;fill:${line.color};letter-spacing:${letterSpacingCSS};`;
-        // Use a small common class for baseline & space to reduce repetition structurally
-        allTextElements.push(`<text class="text-common" y="${fmt(lineYCenter)}" xml:space="preserve" style="${textStyle}">${tspanElements}</text>`);
+        const letterSpacingCSS =
+          typeof line.letterSpacing === "number"
+            ? `${line.letterSpacing}em`
+            : line.letterSpacing.toString();
+
+        const textStyle = `font-family:'${line.font}',monospace;font-size:${fmt(
+          line.fontSize
+        )}px;fill:${line.color};letter-spacing:${letterSpacingCSS};`;
+        allTextElements.push(
+          `<text class="text-common" y="${fmt(
+            lineYCenter
+          )}" xml:space="preserve" style="${textStyle}">${tspanElements}</text>`
+        );
       }
 
-      // cursor typing animation values (after each typed grapheme)
+      // Cursor typing animation values (after each typed grapheme)
       const typingXValues = afterCharX.map((x) => fmt(x + cursorXOffset));
       const typingYValues = afterCharY.map((y) => fmt(y + cursorYOffset));
 
-      // deletion order (reverse of beforeCharX)
-      const deletionXValues: string[] = [];
-      const deletionYValues: string[] = [];
-      if (deleteAfter && totalGraphemeCount > 0) {
+      // Handle cursor animations based on deletion behavior
+      if (typingXValues.length > 0) {
+        const typingBeginAttr = params.repeat
+          ? `cycle.begin + ${fmt(cycleOffset)}s`
+          : `${fmt(cycleOffset)}s`;
+        allCursorAnimations += `<animate attributeName="x" values="${typingXValues.join(
+          ";"
+        )}" dur="${fmt(
+          totalTypingDuration
+        )}s" calcMode="discrete" begin="${typingBeginAttr}" fill="freeze"/>`;
+        allCursorAnimations += `<animate attributeName="y" values="${typingYValues.join(
+          ";"
+        )}" dur="${fmt(
+          totalTypingDuration
+        )}s" calcMode="discrete" begin="${typingBeginAttr}" fill="freeze"/>`;
+      }
+
+      // Deletion cursor animations
+      if (deletionBehavior === "backspace" && totalGraphemeCount > 0) {
+        // Character-by-character deletion cursor movement
+        const deletionXValues: string[] = [];
+        const deletionYValues: string[] = [];
+
         for (let k = totalGraphemeCount - 1; k >= 0; k--) {
           deletionXValues.push(fmt(beforeCharX[k] + cursorXOffset));
           deletionYValues.push(fmt(beforeCharY[k] + cursorYOffset));
         }
-      }
 
-      if (typingXValues.length > 0) {
-        const typingBeginAttr = params.repeat ? `cycle.begin + ${fmt(cycleOffset)}s` : `${fmt(cycleOffset)}s`;
-        allCursorAnimations += `<animate attributeName="x" values="${typingXValues.join(';')}" dur="${fmt(
-          totalTypingDuration,
-        )}s" calcMode="discrete" begin="${typingBeginAttr}" fill="freeze"/>`;
-        allCursorAnimations += `<animate attributeName="y" values="${typingYValues.join(';')}" dur="${fmt(
-          totalTypingDuration,
-        )}s" calcMode="discrete" begin="${typingBeginAttr}" fill="freeze"/>`;
-      }
-
-      if (deleteAfter && deletionXValues.length > 0) {
-        const deletionBeginRel = cycleOffset + totalTypingDuration + pauseDuration;
-        const deletionBeginAttr = params.repeat ? `cycle.begin + ${fmt(deletionBeginRel)}s` : `${fmt(deletionBeginRel)}s`;
-        allCursorAnimations += `<animate attributeName="x" values="${deletionXValues.join(';')}" dur="${fmt(
-          totalGraphemeCount * line.deleteSpeed,
+        const deletionBeginRel =
+          cycleOffset + totalTypingDuration + pauseDuration;
+        const deletionBeginAttr = params.repeat
+          ? `cycle.begin + ${fmt(deletionBeginRel)}s`
+          : `${fmt(deletionBeginRel)}s`;
+        allCursorAnimations += `<animate attributeName="x" values="${deletionXValues.join(
+          ";"
+        )}" dur="${fmt(
+          totalGraphemeCount * line.deleteSpeed
         )}s" calcMode="discrete" begin="${deletionBeginAttr}" fill="freeze"/>`;
-        allCursorAnimations += `<animate attributeName="y" values="${deletionYValues.join(';')}" dur="${fmt(
-          totalGraphemeCount * line.deleteSpeed,
+        allCursorAnimations += `<animate attributeName="y" values="${deletionYValues.join(
+          ";"
+        )}" dur="${fmt(
+          totalGraphemeCount * line.deleteSpeed
         )}s" calcMode="discrete" begin="${deletionBeginAttr}" fill="freeze"/>`;
+      } else if (deletionBehavior === "clear" && totalGraphemeCount > 0) {
+        // For instant clear, move cursor to beginning immediately
+        const clearBeginRel = cycleOffset + totalTypingDuration + pauseDuration;
+        const clearBeginAttr = params.repeat
+          ? `cycle.begin + ${fmt(clearBeginRel)}s`
+          : `${fmt(clearBeginRel)}s`;
+        allCursorAnimations += `<animate attributeName="x" to="${fmt(
+          beforeCharX[0] + cursorXOffset
+        )}" dur="0.01s" begin="${clearBeginAttr}" fill="freeze"/>`;
+        allCursorAnimations += `<animate attributeName="y" to="${fmt(
+          beforeCharY[0] + cursorYOffset
+        )}" dur="0.01s" begin="${clearBeginAttr}" fill="freeze"/>`;
       }
 
-      const transitionBegin = cycleOffset + totalTypingDuration + pauseDuration + deletionDuration;
-      const transitionBeginAttr = params.repeat ? `cycle.begin + ${fmt(transitionBegin)}s` : `${fmt(transitionBegin)}s`;
+      // Transition to next line cursor position
+      if (deletionBehavior !== "stay" || contentIndex < textLines.length - 1) {
+        const transitionBegin =
+          cycleOffset + totalTypingDuration + pauseDuration + deletionDuration;
+        const transitionBeginAttr = params.repeat
+          ? `cycle.begin + ${fmt(transitionBegin)}s`
+          : `${fmt(transitionBegin)}s`;
 
-      const isLast = contentIndex === textLines.length - 1;
-      const nextContentIndex = (contentIndex + 1) % textLines.length;
+        const isLast = contentIndex === textLines.length - 1;
+        const nextContentIndex = (contentIndex + 1) % textLines.length;
 
-      // In all branches we set cursor to the computed next start -- keep consistent behavior
-      const targetCursorPos = calculateInitialCursorPos(textLines, nextContentIndex, false);
-      allCursorAnimations += `<animate attributeName="x" to="${fmt(targetCursorPos.x)}" dur="0.01s" begin="${transitionBeginAttr}" ${params.repeat ? '' : 'fill="freeze"'} />`;
-      allCursorAnimations += `<animate attributeName="y" to="${fmt(targetCursorPos.y)}" dur="0.01s" begin="${transitionBeginAttr}" ${params.repeat ? '' : 'fill="freeze"'} />`;
+        if (!isLast || params.repeat) {
+          // Calculate next cursor position based on deletion behavior
+          let targetCursorPos;
+
+          if (deletionBehavior === "stay") {
+            if (isLast && params.repeat) {
+              // Reset to beginning for repeat - use global positioning
+              targetCursorPos = {
+                x: globalTextBlockXOffset + cursorXOffset,
+                y:
+                  globalTextBlockYOffset +
+                  (textLines[0].fontSize * 1.3) / 2 +
+                  getCursorYOffset(params.cursorStyle, textLines[0].fontSize),
+              };
+            } else {
+              // Move to next line below current content - use global positioning
+              const nextLine = textLines[nextContentIndex];
+              const nextLineHeight = nextLine.fontSize * 1.3;
+              targetCursorPos = {
+                x: globalTextBlockXOffset + cursorXOffset,
+                y:
+                  textBlockYOffset +
+                  textBlockHeight +
+                  nextLineHeight / 2 +
+                  getCursorYOffset(params.cursorStyle, nextLine.fontSize),
+              };
+            }
+          } else {
+            // For 'backspace' and 'clear', cursor returns to same position or moves to next line
+            const nextLine = textLines[nextContentIndex];
+            const nextTextBlockHeight =
+              nextLine.text.split("\n").length * nextLine.fontSize * 1.3;
+            const nextTextBlockYOffset = params.vCenter
+              ? (params.height - nextTextBlockHeight) / 2
+              : 10;
+
+            targetCursorPos = {
+              x: (params.center ? params.width / 2 : 15) + cursorXOffset,
+              y:
+                nextTextBlockYOffset +
+                (nextLine.fontSize * 1.3) / 2 +
+                getCursorYOffset(params.cursorStyle, nextLine.fontSize),
+            };
+          }
+
+          allCursorAnimations += `<animate attributeName="x" to="${fmt(
+            targetCursorPos.x
+          )}" dur="0.01s" begin="${transitionBeginAttr}" ${
+            params.repeat ? "" : 'fill="freeze"'
+          } />`;
+          allCursorAnimations += `<animate attributeName="y" to="${fmt(
+            targetCursorPos.y
+          )}" dur="0.01s" begin="${transitionBeginAttr}" ${
+            params.repeat ? "" : 'fill="freeze"'
+          } />`;
+        }
+      }
 
       cycleOffset += contentCycleDuration;
+
+      // Update accumulated height for 'stay' behavior
+      if (deletionBehavior === "stay") {
+        accumulatedHeight += textBlockHeight;
+      }
     }
 
     overallCycleDuration = cycleOffset || 0;
 
-    // Use the first text line's font size for cursor sizing (or use a default)
-    const cursorFontSize = textLines.length > 0 ? textLines[0].fontSize : params.fontSize;
-    const cursorColor = textLines.length > 0 ? textLines[0].color : params.color;
-    let cursorElement = getCursorSvgShape(params.cursorStyle, cursorColor, cursorFontSize);
+    // If repeating & stay, hide cursor when all text hides (allLinesTypingDuration includes last pause)
+    let repeatHideBegin: number | null = null;
+    if (params.repeat && deletionBehavior === "stay") {
+      repeatHideBegin = allLinesTypingDuration;
+    }
+
+    // small offset to avoid tie ordering issues for cursor visibility & blink
+    const visibilityStartOffset = 0.002; // 2ms
+
+    // Use the first text line's font size for cursor sizing
+    const cursorFontSize =
+      textLines.length > 0 ? textLines[0].fontSize : params.fontSize;
+    const cursorColor =
+      textLines.length > 0 ? textLines[0].color : params.color;
+    let cursorElement = getCursorSvgShape(
+      params.cursorStyle,
+      cursorColor,
+      cursorFontSize
+    );
 
     if (cursorElement) {
-      let visibilityAnimation = '';
+      let visibilityAnimation = "";
       if (params.repeat) {
-        const visibilityValues = 'hidden;visible;hidden';
-        const visibilityKeyTimes = '0;0.001;1';
-        visibilityAnimation = `<animate attributeName="visibility" values="${visibilityValues}" keyTimes="${visibilityKeyTimes}" dur="${fmt(
-          overallCycleDuration,
-        )}s" begin="cycle.begin"/>`;
-      } else {
-        // non-repeat: reveal immediately and hide at the end
-        visibilityAnimation = `<animate attributeName="visibility" from="hidden" to="visible" dur="0.01s" begin="0s" fill="freeze"/><animate attributeName="visibility" to="hidden" dur="0.01s" begin="${fmt(
-          overallCycleDuration,
+        // For repeat mode, reveal slightly after cycle.begin, then hide at allLinesTypingDuration if stay
+        visibilityAnimation += `<animate attributeName="visibility" from="hidden" to="visible" dur="0.01s" begin="cycle.begin + ${fmt(
+          visibilityStartOffset
         )}s" fill="freeze"/>`;
+
+        if (deletionBehavior === "stay" && repeatHideBegin !== null) {
+          // Hide cursor when all text hides (use the same hide time computed earlier)
+          visibilityAnimation += `<animate attributeName="visibility" to="hidden" dur="0.01s" begin="cycle.begin + ${fmt(
+            repeatHideBegin
+          )}s" fill="freeze"/>`;
+        } else {
+          // Fallback behavior (if not 'stay'), keep previous cycle-wide pattern
+          // Start it slightly after cycle.begin to avoid ordering ties.
+          visibilityAnimation = `<animate attributeName="visibility" values="hidden;visible;hidden" keyTimes="0;0.001;1" dur="${fmt(
+            overallCycleDuration
+          )}s" begin="cycle.begin + ${fmt(visibilityStartOffset)}s"/>`;
+        }
+      } else {
+        // non-repeat: reveal immediately and hide based on deletion behavior
+        if (deletionBehavior === "stay") {
+          // For 'stay', cursor remains visible after typing is complete
+          visibilityAnimation = `<animate attributeName="visibility" from="hidden" to="visible" dur="0.01s" begin="0s" fill="freeze"/>`;
+        } else {
+          // For other behaviors, hide at the end
+          visibilityAnimation = `<animate attributeName="visibility" from="hidden" to="visible" dur="0.01s" begin="0s" fill="freeze"/><animate attributeName="visibility" to="hidden" dur="0.01s" begin="${fmt(
+            overallCycleDuration
+          )}s" fill="freeze"/>`;
+        }
       }
 
       allCursorAnimations += visibilityAnimation;
-      allCursorAnimations += `<animate attributeName="opacity" values="1;0" dur="0.7s" begin="${params.repeat ? 'cycle.begin' : '0s'}" repeatCount="indefinite"/>`;
 
-      // inject animations into the rect (replace self-closing with a full element)
-      cursorElement = cursorElement.replace('/>', `>${allCursorAnimations}</rect>`);
+      // Cursor blink animation - adjust based on deletion behavior
+      if (deletionBehavior === "stay" && !params.repeat) {
+        // For 'stay' non-repeat, cursor blinks continuously after all typing is done
+        const blinkStart = overallCycleDuration;
+        allCursorAnimations += `<animate attributeName="opacity" values="1;0;1" dur="1.4s" begin="${fmt(
+          blinkStart
+        )}s" repeatCount="indefinite"/>`;
+      } else {
+        // Standard blinking during the animation
+        // If repeating, start blink slightly after cycle.begin to avoid tie with visibility reset
+        const blinkBegin = params.repeat
+          ? `cycle.begin + ${fmt(visibilityStartOffset)}s`
+          : "0s";
+        allCursorAnimations += `<animate attributeName="opacity" values="1;0" dur="0.7s" begin="${blinkBegin}" repeatCount="indefinite"/>`;
+      }
+
+      // inject animations into the rect
+      cursorElement = cursorElement.replace(
+        "/>",
+        `>${allCursorAnimations}</rect>`
+      );
     } else {
-      // if blank cursor, ensure cursorElement is empty string
-      cursorElement = '';
+      cursorElement = "";
     }
 
     // Build CSS styles including Google Fonts
@@ -513,33 +791,53 @@ export async function GET(req: NextRequest) {
       }
     `;
 
-    // Build final SVG: include embedded Google Fonts CSS
-    const svg = `<svg width="${fmt(params.width)}" height="${fmt(params.height)}" viewBox="0 0 ${fmt(
-      params.width,
-    )} ${fmt(params.height)}" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0.5" y="0.5" width="${fmt(params.width - 1)}" height="${fmt(params.height - 1)}" fill="${params.backgroundColor}" stroke="${
-      params.border ? '#000' : 'none'
+    // Build final SVG
+    const svg = `<svg width="${fmt(params.width)}" height="${fmt(
+      params.height
+    )}" viewBox="0 0 ${fmt(params.width)} ${fmt(
+      params.height
+    )}" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.5" y="0.5" width="${fmt(params.width - 1)}" height="${fmt(
+      params.height - 1
+    )}" fill="${params.backgroundColor}" stroke="${
+      params.border ? "#000" : "none"
     }" stroke-width="1" rx="4"/>
   <defs>
-    ${params.repeat ? `<animate id="cycle" begin="0s;cycle.end" dur="${fmt(overallCycleDuration)}s"/>` : ''}
-    <clipPath id="master-clip"><rect x="0" y="0" width="${fmt(params.width)}" height="${fmt(params.height)}"/></clipPath>
+    ${
+      params.repeat
+        ? `<animate id="cycle" begin="0s;cycle.end" dur="${fmt(
+            overallCycleDuration
+          )}s"/>`
+        : ""
+    }
+    <clipPath id="master-clip"><rect x="0" y="0" width="${fmt(
+      params.width
+    )}" height="${fmt(params.height)}"/></clipPath>
     <style type="text/css"><![CDATA[
 ${stylesCSS.trim()}
     ]]></style>
   </defs>
   <g clip-path="url(#master-clip)">
-    ${allTextElements.join('')}
+    ${allTextElements.join("")}
     ${cursorElement}
   </g>
 </svg>`;
 
     return new NextResponse(svg, {
-      headers: { 'Content-Type': 'image/svg+xml', 'Cache-control': 'no-cache, no-store, must-revalidate' },
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Cache-control": "no-cache, no-store, must-revalidate",
+      },
     });
   } catch (error) {
     if (error instanceof Error) {
-      return new NextResponse(JSON.stringify({ error: error.message }), { status: 400 });
+      return new NextResponse(JSON.stringify({ error: error.message }), {
+        status: 400,
+      });
     }
-    return new NextResponse(JSON.stringify({ error: 'An unknown error occurred' }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ error: "An unknown error occurred" }),
+      { status: 500 }
+    );
   }
 }
