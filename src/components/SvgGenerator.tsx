@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Settings, Eye, Code, Palette, Plus, Minus, Download, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Moon, Sun, TextCursor, Eye, Code, Palette, Plus, Minus, Download, Copy, Check, ChevronDown, ChevronUp, Github, Star } from 'lucide-react';
 
 interface TextLine {
     text: string;
@@ -11,6 +11,12 @@ interface TextLine {
     letterSpacing: number;
     typingSpeed: number;
     deleteSpeed: number;
+}
+
+
+interface GitHubStats {
+    stars: number;
+    loading: boolean;
 }
 
 export default function SVGGenerator() {
@@ -36,6 +42,29 @@ export default function SVGGenerator() {
     const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
     const [isLoading, setIsLoading] = useState(false);
     const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set([0])); // First line expanded by default
+    const [githubStats, setGithubStats] = useState<GitHubStats>({ stars: 0, loading: true });
+
+    const GITHUB_REPO = 'whiteSHADOW1234/TypingSVG';
+
+    // Fetch GitHub stars
+    useEffect(() => {
+        const fetchGitHubStats = async () => {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setGithubStats({ stars: data.stargazers_count, loading: false });
+                } else {
+                    setGithubStats({ stars: 0, loading: false });
+                }
+            } catch (error) {
+                console.error('Failed to fetch GitHub stats:', error);
+                setGithubStats({ stars: 0, loading: false });
+            }
+        };
+
+        fetchGitHubStats();
+    }, []);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -155,6 +184,10 @@ export default function SVGGenerator() {
         }
     };
 
+    const openGitHub = () => {
+        window.open(`https://github.com/${GITHUB_REPO}`, '_blank');
+    };
+
     return (
         <div className={`min-h-screen transition-all duration-300 ${isDarkMode ? 'bg-black' : 'bg-gray-50'}`}>
             {/* Notification Toast */}
@@ -171,29 +204,58 @@ export default function SVGGenerator() {
                 </div>
             </div>
 
-            <div className="container mx-auto p-6">
-                {/* Header with Dark Mode Toggle */}
+                        <div className="container mx-auto p-6">
+                {/* Header with Dark Mode Toggle and GitHub Buttons */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-yellow-500' : 'bg-blue-500'}`}>
-                            <Settings className="w-6 h-6 text-white" />
+                            <TextCursor className="w-6 h-6 text-white" />
                         </div>
                         <h1 className={`text-4xl font-bold bg-gradient-to-r ${isDarkMode ? 'from-yellow-400 to-yellow-200' : 'from-blue-600 to-purple-600'} bg-clip-text text-transparent`}>
                             Typing SVG Generator
                         </h1>
                     </div>
                     
-                    <button
-                        onClick={() => setIsDarkMode(!isDarkMode)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                            isDarkMode 
-                                ? 'bg-gray-800 border border-yellow-500 text-yellow-400 hover:bg-gray-700' 
-                                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                        } shadow-lg`}
-                    >
-                        {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                        {isDarkMode ? 'Light' : 'Dark'}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {/* GitHub Repo Button */}
+                        <button
+                            onClick={openGitHub}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                                isDarkMode 
+                                    ? 'bg-gray-800 border border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500' 
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                            } shadow-lg`}
+                        >
+                            <Github className="w-4 h-4" />
+                            GitHub
+                        </button>
+
+                        {/* Star Button */}
+                        <button
+                            onClick={openGitHub}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                                isDarkMode 
+                                    ? 'bg-gray-800 border border-yellow-500/30 text-yellow-400 hover:bg-gray-700 hover:border-yellow-500/50' 
+                                    : 'bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300'
+                            } shadow-lg`}
+                        >
+                            <Star className={`w-4 h-4 ${githubStats.loading ? 'animate-pulse' : ''}`} />
+                            {githubStats.loading ? '...' : githubStats.stars.toLocaleString()}
+                        </button>
+
+                        {/* Dark/Light Mode Toggle */}
+                        <button
+                            onClick={() => setIsDarkMode(!isDarkMode)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                                isDarkMode 
+                                    ? 'bg-gray-800 border border-yellow-500 text-yellow-400 hover:bg-gray-700' 
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                            } shadow-lg`}
+                        >
+                            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                            {isDarkMode ? 'Light' : 'Dark'}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
