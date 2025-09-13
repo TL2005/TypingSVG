@@ -94,7 +94,7 @@ Customize it with query parameters:
 
 **Example:**  
 ```
-https://typingsvg.vercel.app/api/svg?text=Hello%2C+World%21&font=Courier%20Prime&color=%23000000&width=450&height=150&typingSpeed=0.07&pause=1000&letterSpacing=0.1&repeat=true&backgroundColor=%23ffffff&fontSize=28&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=false&deleteSpeed=0.07
+https://typingsvg.vercel.app/api/svg?width=450&height=150&pause=1000&repeat=true&backgroundColor=%23ffffff&center=true&vCenter=true&border=true&cursorStyle=straight&deleteAfter=true&lines=%5B%7B%22text%22%3A%22Hello%2C+World%21%22%2C%22font%22%3A%22Monaco%22%2C%22color%22%3A%22%23000000%22%2C%22fontSize%22%3A28%2C%22letterSpacing%22%3A0.1%2C%22typingSpeed%22%3A0.05%2C%22deleteSpeed%22%3A0.5%7D%5D
 ```
 
 ##  Credits & Inspiration
