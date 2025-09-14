@@ -220,7 +220,7 @@ export async function GET(req: NextRequest) {
           fontSize: params.fontSize,
           letterSpacing: params.letterSpacing,
           typingSpeed: params.typingSpeed,
-          deleteSpeed: params.typingSpeed,
+          deleteSpeed: params.deleteSpeed,
         }));
       }
     } catch (error) {

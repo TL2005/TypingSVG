@@ -44,6 +44,7 @@ export function validateParams(params: URLSearchParams) {
             typingSpeed: 0.5,
             letterSpacing: '0.1em',
             fontSize: 28,
+            deleteSpeed: 0.5,
             // Active fields for new format
             width,
             height,
@@ -65,6 +66,7 @@ export function validateParams(params: URLSearchParams) {
         const width = parseInt(params.get('width') || '450', 10);
         const height = parseInt(params.get('height') || '150', 10);
         const typingSpeed = parseFloat(params.get('typingSpeed') || '0.5');
+        const deleteSpeed = parseFloat(params.get('deleteSpeed') || '0.5');
         const pause = parseInt(params.get('pause') || '1000', 10);
         
         // Handle letter spacing - can be string (CSS value) or number (treated as em)
@@ -102,7 +104,7 @@ export function validateParams(params: URLSearchParams) {
             deletionBehavior = deleteAfterParam === 'true' ? 'backspace' : 'stay';
         }
 
-        if ([width, height, typingSpeed, pause, fontSize, fontRatio].some(isNaN)) {
+        if ([width, height, typingSpeed, pause, deleteSpeed, fontSize, fontRatio].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
 
@@ -114,6 +116,7 @@ export function validateParams(params: URLSearchParams) {
             height,
             typingSpeed,
             pause,
+            deleteSpeed,
             letterSpacing,
             repeat,
             backgroundColor,
