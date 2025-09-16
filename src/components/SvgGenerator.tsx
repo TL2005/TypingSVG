@@ -21,6 +21,31 @@ interface GitHubStats {
 // New deletion behavior type
 type DeletionBehavior = 'stay' | 'backspace' | 'clear';
 
+/**
+ * Default values - should match the ones in utils.ts
+ */
+const DEFAULT_VALUES = {
+    // Text line defaults
+    font: 'Courier Prime',
+    color: '#000000',
+    fontSize: 28,
+    letterSpacing: '0.1em',
+    typingSpeed: 0.5,
+    deleteSpeed: 0.5,
+    
+    // Global defaults
+    width: 450,
+    height: 150,
+    pause: 1000,
+    repeat: true,
+    backgroundColor: '#ffffff',
+    center: true,
+    vCenter: true,
+    border: true,
+    cursorStyle: 'straight',
+    deletionBehavior: 'backspace' as DeletionBehavior
+};
+
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
         { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 },
@@ -144,22 +169,59 @@ export default function SVGGenerator() {
         });
     };
 
-    const generateQueryString = () => {
-        const params = new URLSearchParams({
-            width: String(width),
-            height: String(height),
-            pause: String(pause),
-            repeat: String(repeat),
-            backgroundColor,
-            center: String(center),
-            vCenter: String(vCenter),
-            border: String(border),
-            cursorStyle,
-            deletionBehavior,
-        });
+    /**
+     * Helper function to check if a text line uses default values
+     */
+    const isLineUsingDefaults = (line: TextLine): boolean => {
+        return (
+            line.font === DEFAULT_VALUES.font &&
+            line.color === DEFAULT_VALUES.color &&
+            line.fontSize === DEFAULT_VALUES.fontSize &&
+            line.letterSpacing === DEFAULT_VALUES.letterSpacing &&
+            line.typingSpeed === DEFAULT_VALUES.typingSpeed &&
+            line.deleteSpeed === DEFAULT_VALUES.deleteSpeed
+        );
+    };
 
-        // Add line-specific data
-        params.append('lines', JSON.stringify(textLines));
+    /**
+     * Create a minimal text line object with only non-default values
+     */
+    const createMinimalLine = (line: TextLine): Partial<TextLine> => {
+        const minimal: Partial<TextLine> = { text: line.text };
+        
+        if (line.font !== DEFAULT_VALUES.font) minimal.font = line.font;
+        if (line.color !== DEFAULT_VALUES.color) minimal.color = line.color;
+        if (line.fontSize !== DEFAULT_VALUES.fontSize) minimal.fontSize = line.fontSize;
+        if (line.letterSpacing !== DEFAULT_VALUES.letterSpacing) minimal.letterSpacing = line.letterSpacing;
+        if (line.typingSpeed !== DEFAULT_VALUES.typingSpeed) minimal.typingSpeed = line.typingSpeed;
+        if (line.deleteSpeed !== DEFAULT_VALUES.deleteSpeed) minimal.deleteSpeed = line.deleteSpeed;
+        
+        return minimal;
+    };
+
+    const generateQueryString = () => {
+        const params = new URLSearchParams();
+        
+        // Only add global parameters if they differ from defaults
+        if (width !== DEFAULT_VALUES.width) params.append('width', String(width));
+        if (height !== DEFAULT_VALUES.height) params.append('height', String(height));
+        if (pause !== DEFAULT_VALUES.pause) params.append('pause', String(pause));
+        if (repeat !== DEFAULT_VALUES.repeat) params.append('repeat', String(repeat));
+        if (backgroundColor !== DEFAULT_VALUES.backgroundColor) params.append('backgroundColor', backgroundColor);
+        if (center !== DEFAULT_VALUES.center) params.append('center', String(center));
+        if (vCenter !== DEFAULT_VALUES.vCenter) params.append('vCenter', String(vCenter));
+        if (border !== DEFAULT_VALUES.border) params.append('border', String(border));
+        if (cursorStyle !== DEFAULT_VALUES.cursorStyle) params.append('cursorStyle', cursorStyle);
+        if (deletionBehavior !== DEFAULT_VALUES.deletionBehavior) params.append('deletionBehavior', deletionBehavior);
+
+        // Filter out lines with empty text and create minimal line objects
+        const validLines = textLines.filter(line => line.text.trim() !== '');
+        const minimalLines = validLines.map(createMinimalLine);
+        
+        // Only add lines parameter if we have valid lines
+        if (minimalLines.length > 0) {
+            params.append('lines', JSON.stringify(minimalLines));
+        }
 
         return params.toString();
     };
