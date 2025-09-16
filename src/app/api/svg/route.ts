@@ -233,7 +233,7 @@ export async function GET(req: NextRequest) {
     Object.keys(defaults).forEach((k) => {
       const key = k as keyof typeof defaults;
       if (p[key] === undefined || p[key] === null) {
-        (p as any)[key] = defaults[key];
+        (p as Record<string, unknown>)[key] = defaults[key];
       }
     });
 
@@ -266,9 +266,7 @@ export async function GET(req: NextRequest) {
             font: ln && ln.font ? ln.font : p.font,
             color: ln && ln.color ? ln.color : p.color,
             fontSize:
-              ln && typeof ln.fontSize === "number"
-                ? ln.fontSize
-                : p.fontSize,
+              ln && typeof ln.fontSize === "number" ? ln.fontSize : p.fontSize,
             letterSpacing:
               ln && ln.letterSpacing !== undefined
                 ? ln.letterSpacing
@@ -394,10 +392,7 @@ export async function GET(req: NextRequest) {
       }
 
       // compute width and enforce a sensible minimum advance to prevent overlap
-      const charWidth = Math.max(
-        p.fontSize * multiplier,
-        p.fontSize * 0.25
-      );
+      const charWidth = Math.max(p.fontSize * multiplier, p.fontSize * 0.25);
       const totalWidth = charWidth + (isLastChar ? 0 : letterSpacingPx);
 
       return { charWidth, totalWidth };
@@ -467,8 +462,7 @@ export async function GET(req: NextRequest) {
       : 15;
 
     // compute pause duration once (seconds) and use grapheme-aware counting
-    const pauseDuration =
-      (Number(searchParams.get("pause")) || p.pause) / 1000;
+    const pauseDuration = (Number(searchParams.get("pause")) || p.pause) / 1000;
 
     // total time (relative to cycle.begin) after which ALL lines have finished typing,
     // INCLUDING the pause after the last line. **Count graphemes exactly the same way the renderer does**
@@ -539,12 +533,8 @@ export async function GET(req: NextRequest) {
           : globalTextBlockXOffset;
       } else {
         // For 'backspace' and 'clear', each line uses the same position
-        textBlockYOffset = p.vCenter
-          ? (p.height - textBlockHeight) / 2
-          : 10;
-        textBlockXOffset = p.center
-          ? (p.width - textBlockWidth) / 2
-          : 15;
+        textBlockYOffset = p.vCenter ? (p.height - textBlockHeight) / 2 : 10;
+        textBlockXOffset = p.center ? (p.width - textBlockWidth) / 2 : 15;
       }
 
       const totalTypingDuration = totalGraphemeCount * line.typingSpeed;
@@ -569,10 +559,7 @@ export async function GET(req: NextRequest) {
       const beforeCharY: number[] = [];
 
       const centerX = p.width / 2;
-      const cursorYOffset = getCursorYOffset(
-        p.cursorStyle,
-        line.fontSize
-      );
+      const cursorYOffset = getCursorYOffset(p.cursorStyle, line.fontSize);
       const cursorXOffset = line.fontSize * 0.12;
 
       const deleteStart = cycleOffset + totalTypingDuration + pauseDuration;
@@ -764,10 +751,7 @@ export async function GET(req: NextRequest) {
                 y:
                   globalTextBlockYOffset +
                   (textLines[0].fontSize * 1.3) / 2 +
-                  getCursorYOffset(
-                    p.cursorStyle,
-                    textLines[0].fontSize
-                  ),
+                  getCursorYOffset(p.cursorStyle, textLines[0].fontSize),
               };
             } else {
               // Move to next line below current content - use global positioning
@@ -779,10 +763,7 @@ export async function GET(req: NextRequest) {
                   textBlockYOffset +
                   textBlockHeight +
                   nextLineHeight / 2 +
-                  getCursorYOffset(
-                    p.cursorStyle,
-                    nextLine.fontSize
-                  ),
+                  getCursorYOffset(p.cursorStyle, nextLine.fontSize),
               };
             }
           } else {
@@ -795,16 +776,11 @@ export async function GET(req: NextRequest) {
               : 10;
 
             targetCursorPos = {
-              x:
-                (p.center ? p.width / 2 : 15) +
-                cursorXOffset,
+              x: (p.center ? p.width / 2 : 15) + cursorXOffset,
               y:
                 nextTextBlockYOffset +
                 (nextLine.fontSize * 1.3) / 2 +
-                getCursorYOffset(
-                  p.cursorStyle,
-                  nextLine.fontSize
-                ),
+                getCursorYOffset(p.cursorStyle, nextLine.fontSize),
             };
           }
 
@@ -843,8 +819,7 @@ export async function GET(req: NextRequest) {
     // Use the first text line's font size for cursor sizing
     const cursorFontSize =
       textLines.length > 0 ? textLines[0].fontSize : p.fontSize;
-    const cursorColor =
-      textLines.length > 0 ? textLines[0].color : p.color;
+    const cursorColor = textLines.length > 0 ? textLines[0].color : p.color;
     let cursorElement = getCursorSvgShape(
       p.cursorStyle,
       cursorColor,
