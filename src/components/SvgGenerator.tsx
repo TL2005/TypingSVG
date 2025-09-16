@@ -269,75 +269,82 @@ export default function SVGGenerator() {
                 </div>
             </div>
 
-            <div className="container mx-auto p-6">
+            <div className="container mx-auto p-4 sm:p-6">
                 {/* Header with Dark Mode Toggle and GitHub Buttons */}
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-yellow-500' : 'bg-blue-500'}`}>
-                            <TextCursor className="w-6 h-6 text-white" />
+                <div className="mb-8">
+                    {/* Mobile-first responsive header */}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        {/* Logo and Title */}
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-yellow-500' : 'bg-blue-500'}`}>
+                                <TextCursor className="w-6 h-6 text-white" />
+                            </div>
+                            <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r ${isDarkMode ? 'from-yellow-400 to-yellow-200' : 'from-blue-600 to-purple-600'} bg-clip-text text-transparent`}>
+                                Typing SVG Generator
+                            </h1>
                         </div>
-                        <h1 className={`text-4xl font-bold bg-gradient-to-r ${isDarkMode ? 'from-yellow-400 to-yellow-200' : 'from-blue-600 to-purple-600'} bg-clip-text text-transparent`}>
-                            Typing SVG Generator
-                        </h1>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                        {/* GitHub Repo Button */}
-                        <button
-                            onClick={openGitHub}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                                isDarkMode 
-                                    ? 'bg-gray-800 border border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500' 
-                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
-                            } shadow-lg`}
-                        >
-                            <Github className="w-4 h-4" />
-                            GitHub
-                        </button>
+                        
+                        {/* Buttons - responsive layout */}
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            {/* GitHub Repo Button */}
+                            <button
+                                onClick={openGitHub}
+                                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-full text-sm sm:text-base transition-all duration-300 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-800 border border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500' 
+                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                                } shadow-lg`}
+                            >
+                                <Github className="w-4 h-4" />
+                                <span className="hidden xs:inline">GitHub</span>
+                            </button>
 
-                        {/* Star Button */}
-                        <button
-                            onClick={openGitHub}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                                isDarkMode 
-                                    ? 'bg-gray-800 border border-yellow-500/30 text-yellow-400 hover:bg-gray-700 hover:border-yellow-500/50' 
-                                    : 'bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300'
-                            } shadow-lg`}
-                        >
-                            <Star className={`w-4 h-4 ${githubStats.loading ? 'animate-pulse' : ''}`} />
-                            {githubStats.loading ? '...' : githubStats.stars.toLocaleString()}
-                        </button>
+                            {/* Star Button */}
+                            <button
+                                onClick={openGitHub}
+                                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-full text-sm sm:text-base transition-all duration-300 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-800 border border-yellow-500/30 text-yellow-400 hover:bg-gray-700 hover:border-yellow-500/50' 
+                                        : 'bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300'
+                                } shadow-lg`}
+                            >
+                                <Star className={`w-4 h-4 ${githubStats.loading ? 'animate-pulse' : ''}`} />
+                                <span className="text-xs sm:text-sm">
+                                    {githubStats.loading ? '...' : githubStats.stars.toLocaleString()}
+                                </span>
+                            </button>
 
-                        {/* Dark/Light Mode Toggle */}
-                        <button
-                            onClick={() => setIsDarkMode(!isDarkMode)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                                isDarkMode 
-                                    ? 'bg-gray-800 border border-yellow-500 text-yellow-400 hover:bg-gray-700' 
-                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                            } shadow-lg`}
-                        >
-                            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                            {isDarkMode ? 'Light' : 'Dark'}
-                        </button>
+                            {/* Dark/Light Mode Toggle */}
+                            <button
+                                onClick={() => setIsDarkMode(!isDarkMode)}
+                                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-full text-sm sm:text-base transition-all duration-300 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-800 border border-yellow-500 text-yellow-400 hover:bg-gray-700' 
+                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                                } shadow-lg`}
+                            >
+                                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                                <span className="hidden xs:inline">{isDarkMode ? 'Light' : 'Dark'}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
                     {/* --- CONTROLS COLUMN --- */}
-                    <div className={`p-6 rounded-2xl border transition-all duration-300 ${
+                    <div className={`p-4 sm:p-6 rounded-2xl border transition-all duration-300 ${
                         isDarkMode 
                             ? 'bg-gray-900 border-gray-700' 
                             : 'bg-white border-gray-200'
                     } shadow-xl`}>
-                        <div className="flex items-center gap-2 mb-6">
+                        <div className="flex items-center gap-2 mb-4 sm:mb-6">
                             <Palette className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400' : 'text-blue-500'}`} />
-                            <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
+                            <h2 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
                                 Configuration
                             </h2>
                         </div>
                         
-                        <div className="space-y-5">
+                        <div className="space-y-4 sm:space-y-5">
                             {/* Text Lines with Individual Controls */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
@@ -503,7 +510,7 @@ export default function SVGGenerator() {
                                 </h3>
                                 
                                 {/* Dimensions */}
-                                <div className="grid grid-cols-2 gap-4 mb-4"> 
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"> 
                                     <InputField 
                                         label="Width" 
                                         type="number" 
@@ -521,7 +528,7 @@ export default function SVGGenerator() {
                                 </div>
 
                                 {/* Background and Pause */}
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <ColorField 
                                         label="Background Color" 
                                         value={backgroundColor} 
@@ -559,12 +566,12 @@ export default function SVGGenerator() {
                                 </div>
 
                                 {/* Layout Options */}
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <Checkbox label="Center Horizontally" checked={center} onChange={setCenter} isDarkMode={isDarkMode} />
                                     <Checkbox label="Center Vertically" checked={vCenter} onChange={setVCenter} isDarkMode={isDarkMode} />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <Checkbox label="Repeat Animation" checked={repeat} onChange={setRepeat} isDarkMode={isDarkMode} />
                                     <Checkbox label="Show SVG Border" checked={border} onChange={setBorder} isDarkMode={isDarkMode} />
                                 </div>
@@ -612,23 +619,23 @@ export default function SVGGenerator() {
                     </div>
 
                     {/* --- PREVIEW COLUMN --- */}
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                         {/* Preview Section */}
-                        <div className={`p-6 rounded-2xl border transition-all duration-300 ${
+                        <div className={`p-4 sm:p-6 rounded-2xl border transition-all duration-300 ${
                             isDarkMode 
                                 ? 'bg-gray-900 border-gray-700' 
                                 : 'bg-white border-gray-200'
                         } shadow-xl`}>
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
                                 <div className="flex items-center gap-2">
                                     <Eye className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400' : 'text-blue-500'}`} />
-                                    <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
+                                    <h2 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
                                         Live Preview
                                     </h2>
                                 </div>
                                 <button
                                     onClick={handleDownload}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base transition-all duration-300 ${
                                         isDarkMode
                                             ? 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500/50'
                                             : 'bg-blue-500/10 border border-blue-500/30 text-blue-600 hover:bg-blue-500/20 hover:border-blue-500/50'
@@ -638,7 +645,7 @@ export default function SVGGenerator() {
                                     Download
                                 </button>
                             </div>
-                            <div className={`border-2 border-dashed rounded-xl p-8 flex items-center justify-center min-h-[200px] relative ${
+                            <div className={`border-2 border-dashed rounded-xl p-4 sm:p-8 flex items-center justify-center min-h-[150px] sm:min-h-[200px] relative ${
                                 isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50/50'
                             }`}>
                                 {/* Loading Animation */}
@@ -670,14 +677,14 @@ export default function SVGGenerator() {
                         </div>
 
                         {/* URL Section */}
-                        <div className={`p-6 rounded-2xl border transition-all duration-300 ${
+                        <div className={`p-4 sm:p-6 rounded-2xl border transition-all duration-300 ${
                             isDarkMode 
                                 ? 'bg-gray-900 border-gray-700' 
                                 : 'bg-white border-gray-200'
                         } shadow-xl`}>
                             <div className="flex items-center gap-2 mb-4">
                                 <Code className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400' : 'text-blue-500'}`} />
-                                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
+                                <h2 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
                                     Generated Code
                                 </h2>
                             </div>
