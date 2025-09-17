@@ -24,16 +24,17 @@
 
 ## Features
 
-There are other typing SVG projects out there — but this one takes it further:
+There are other typing-SVG projects out there — but Typing SVG focuses on flexibility and precision:
 
-- **Multi-line Customization**: Customize every line individually.
-- **Multi-line input**: Write multiple lines, not just one.  
-- **True text formatting**: Supports multiple spaces, line breaks, and precise alignment.  
-- **Flexible deletion**: Customize `deleteSpeed` and decide whether text should erase or not. 
-- **More cursor styles**: Straight, underline, block, or even blank.  
-- **Fine-grained control**: Letter spacing, pause duration, repeat toggle, borders, and more.  
+- **Per-line customization**: Set font, color, fontSize, letterSpacing, typingSpeed and deleteSpeed for each line independently.
+- **Multi-line input**: Each `lines` item can contain `\n` to render visual line breaks within that item.
+- **Accurate spacing & alignment**: Preserves multiple spaces, newlines and supports centering (horizontal/vertical).
+- **Flexible deletion behaviors**: `backspace`, `clear`, or `stay` with configurable delete speed.
+- **Multiple cursor styles**: `straight`, `underline`, `block`, or `blank`.
+- **Fine-grained controls**: Pause duration, repeat toggle, border, background, and more.
+- **Server-rendered**: SVG is fully rendered server-side — fonts are inlined so consumers don't need to load fonts on the client.
 
-In short: **more customization, more control, and more creativity** 🎨.
+Short: **more customization, more control, and more shareable animated text** 🎨
 
 
 ## Live Demo & Preview
@@ -42,9 +43,10 @@ link: https://typingsvg.vercel.app/
 
 ## How to Use
 1. Visit the site: [typingsvg.vercel.app](https://typingsvg.vercel.app/)
-2. Customize your SVG with text, speed, colors, and styles.
-3. Copy the URL or download the file, then use it anywhere (README, profile, blog, etc.).
-4. Star this repo ~ 😄
+2. Enter your text (press Enter to create line breaks — multiple spaces are preserved).
+3. Tweak fonts, colors, speeds and cursor; preview updates live.
+4. Copy the generated URL or download the SVG and embed it anywhere (README, profile, blog, social, etc.).
+5. Star this repo ~ 😄
 
 ## Deploy It Yourself
 Since this project is hosted on a free Vercel account, resources are limited. To ensure optimal performance and availability, it's recommended to deploy Typing SVG on your own. Here's how:
@@ -57,42 +59,38 @@ Since this project is hosted on a free Vercel account, resources are limited. To
 
 3. Follow the prompts to deploy the application to your Vercel account.
 
+## API Options
 
-
-## Example Usage
-Here are some examples of how to use this project:
-
-[![whiteSHADOW1234](https://github.com/whiteSHADOW1234.png?size=60)](https://github.com/whiteSHADOW1234 "whiteSHADOW1234")
-
-- Feel free to open a pull request and add your own examples!
-
-
-## Options
-
-The SVG is generated via the `/api/svg` endpoint.  
-Customize it with query parameters:
+The SVG is generated via the `/api/svg` endpoint. Customize it with query parameters:
 
 | Parameter | Description | Default |
 |---|---|---|
-| `text` | Text to be typed. Use `;` to separate lines. | `Hello, World!;And Emojis! 😀🚀` |
+| `lines` | **Preferred** — JSON array of line objects. Each must include `text` and may include per-line style overrides. Use `\n` in text for internal line breaks.| `lines=[{"text":"Hello, World!"},{"text":"And Emojis! 😀🚀"}]`|
+| `text` | **Legacy (deprecated)** —Text to be typed. Use `;` to separate lines. Prefer lines. | `Hello, World!;And Emojis! 😀🚀` |
 | `font` | Font family for the text. | `Courier Prime` |
-| `color` | Text color in hex format (without `#`). | `000000` |
-| `backgroundColor` | Background color in hex format (without `#`). | `ffffff` |
-| `width` | Width of the SVG. | `450` |
-| `height` | Height of the SVG. | `150` |
-| `fontSize` | Font size of the text. | `28` |
+| `color` | Text color in hex format. | `#000000` |
+| `backgroundColor` | Background color in hex format. | `#ffffff` |
+| `width` | Width of the SVG in px. | `450` |
+| `height` | Height of the SVG in px. | `150` |
+| `fontSize` | Font size of the text in px. | `28` |
 | `typingSpeed` | Typing speed in seconds per character. | `0.5` |
 | `deleteSpeed` | Deletion speed in seconds per character. | `0.5` |
-| `pause` | Pause at the end of animation (ms). | `1000` |
-| `letterSpacing` | Letter spacing in `em`. | `0.1` |
+| `pause` | Pause after a content block in milliseconds. | `1000` |
+| `letterSpacing` | Letter spacing in `em`. | `0.1em` |
 | `repeat` | Repeat the animation (`true`/`false`). | `true` |
 | `center` | Center text horizontally (`true`/`false`). | `true` |
 | `vCenter` | Center text vertically (`true`/`false`). | `true` |
 | `border` | Show a border (`true`/`false`). | `true` |
 | `cursorStyle` | Cursor style (`straight`, `underline`, `block`, `blank`). | `straight` |
-| `deleteAfter` | Delete text after typing (`true`/`false`). | `true` |
+| `deletionBehavior` | How deletion is handled: `stay`, `backspace`, `clear`. | `backspace` |
 
-**Example:**  
+**Notes**
+
+- Per-line overrides in lines take precedence over global parameters.
+- Always URL-encode the lines JSON when you put it into a query string — this is required for `\n`, emojis and other special characters. (The demo UI encodes for you automatically.)
+- Emojis are supported; they are treated as single graphemes for layout.
+
+**Basic Example (readable form):**  
 ```
 https://typingsvg.vercel.app/api/svg?lines=[{"text":"Hello,+World!"}]
 ```
