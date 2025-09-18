@@ -1,5 +1,5 @@
 <p  align="center">
-  <h3 align="center">Typing SVG</h3>
+  <h1 align="center">TypingSVG</h1>
 </p>
   
 <p align="center">
