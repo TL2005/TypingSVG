@@ -26,6 +26,7 @@
 
 There are other typing-SVG projects out there — but Typing SVG focuses on flexibility and precision:
 
+- **Full Google Fonts support**: Use any font available on Google Fonts. Specify the font family name per-line (e.g. `"Roboto"`, `"Bitcount Ink"`); the server will fetch and inline the font files so the SVG renders the same everywhere.
 - **Per-line customization**: Set font, color, fontSize, letterSpacing, typingSpeed and deleteSpeed for each line independently.
 - **Multi-line input**: Each `lines` item can contain `\n` to render visual line breaks within that item.
 - **Accurate spacing & alignment**: Preserves multiple spaces, newlines and supports centering (horizontal/vertical).
