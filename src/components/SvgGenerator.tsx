@@ -70,7 +70,15 @@ export default function SVGGenerator() {
     const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
     const [isLoading, setIsLoading] = useState(false);
     const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set([0])); // First line expanded by default
+    const [cursorDropdownOpen, setCursorDropdownOpen] = useState(false);
     const [githubStats, setGithubStats] = useState<GitHubStats>({ stars: 0, loading: true });
+    
+    const cursorOptions = [
+        { value: 'straight', label: 'Straight', icon: '|' },
+        { value: 'underline', label: 'Underline', icon: '_' },
+        { value: 'block', label: 'Block', icon: '█' },
+        { value: 'blank', label: 'Blank (No Cursor)', icon: '○' }
+    ];
 
     const GITHUB_REPO = 'whiteSHADOW1234/TypingSVG';
 
@@ -98,6 +106,18 @@ export default function SVGGenerator() {
         if (typeof window !== 'undefined') {
             setOrigin(window.location.origin);
         }
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            if (!target.closest('[data-cursor-dropdown]')) {
+                setCursorDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     // Add loading state management for SVG updates
@@ -544,25 +564,72 @@ export default function SVGGenerator() {
                                     />
                                 </div>
 
-                                {/* Cursor Style */}
-                                <div className="mb-4">
+                                {/* Cursor Style - Custom Dropdown */}
+                                <div className="mb-4" data-cursor-dropdown>
                                     <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                         Cursor Style
                                     </label>
-                                    <select 
-                                        value={cursorStyle} 
-                                        onChange={(e) => setCursorStyle(e.target.value)} 
-                                        className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 ${
-                                            isDarkMode 
-                                                ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20' 
-                                                : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-                                        }`}
-                                    >
-                                        <option value="straight">Straight</option>
-                                        <option value="underline">Underline</option>
-                                        <option value="block">Block</option>
-                                        <option value="blank">Blank (No Cursor)</option>
-                                    </select>
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCursorDropdownOpen(!cursorDropdownOpen)}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 flex items-center justify-between ${
+                                                isDarkMode 
+                                                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                                            } ${cursorDropdownOpen ? (isDarkMode ? 'border-yellow-500 ring-2 ring-yellow-500/20' : 'border-blue-500 ring-2 ring-blue-500/20') : ''}`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className={`font-mono text-lg ${isDarkMode ? 'text-yellow-400' : 'text-blue-600'}`}>
+                                                    {cursorOptions.find(opt => opt.value === cursorStyle)?.icon}
+                                                </span>
+                                                <span>{cursorOptions.find(opt => opt.value === cursorStyle)?.label}</span>
+                                            </div>
+                                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                                                cursorDropdownOpen ? 'rotate-180' : ''
+                                            } ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                        </button>
+                                        
+                                        {cursorDropdownOpen && (
+                                            <div className={`absolute top-full left-0 right-0 mt-1 rounded-lg border shadow-lg z-50 ${
+                                                isDarkMode 
+                                                    ? 'bg-gray-800 border-gray-600' 
+                                                    : 'bg-white border-gray-200'
+                                            }`}>
+                                                {cursorOptions.map((option) => (
+                                                    <button
+                                                        key={option.value}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setCursorStyle(option.value);
+                                                            setCursorDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full px-3 py-3 flex items-center gap-3 text-left transition-all duration-150 first:rounded-t-lg last:rounded-b-lg ${
+                                                            cursorStyle === option.value
+                                                                ? (isDarkMode 
+                                                                    ? 'bg-yellow-500/10 text-yellow-400' 
+                                                                    : 'bg-blue-500/10 text-blue-600')
+                                                                : (isDarkMode 
+                                                                    ? 'text-gray-300 hover:bg-gray-700' 
+                                                                    : 'text-gray-700 hover:bg-gray-50')
+                                                        }`}
+                                                    >
+                                                        <span className={`font-mono text-lg ${
+                                                            cursorStyle === option.value
+                                                                ? (isDarkMode ? 'text-yellow-400' : 'text-blue-600')
+                                                                : (isDarkMode ? 'text-gray-400' : 'text-gray-500')
+                                                        }`}>
+                                                            {option.icon}
+                                                        </span>
+                                                        <span className="flex-1">{option.label}</span>
+                                                        {cursorStyle === option.value && (
+                                                            <Check className={`w-4 h-4 ${isDarkMode ? 'text-yellow-400' : 'text-blue-600'}`} />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Layout Options */}
