@@ -11,6 +11,8 @@ interface TextLine {
     letterSpacing: string;
     typingSpeed: number;
     deleteSpeed: number;
+    fontWeight: string;
+    capLowercaseGap: number;
 }
 
 interface GitHubStats {
@@ -32,6 +34,8 @@ const DEFAULT_VALUES = {
     letterSpacing: '0.1em',
     typingSpeed: 0.5,
     deleteSpeed: 0.5,
+    fontWeight: '400',
+    capLowercaseGap: 0,
     
     // Global defaults
     width: 450,
@@ -48,8 +52,8 @@ const DEFAULT_VALUES = {
 
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
-        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 },
-        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5 }
+        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', capLowercaseGap: 0 },
+        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', capLowercaseGap: 0 }
     ]);
     
     // Global settings
@@ -151,7 +155,9 @@ export default function SVGGenerator() {
             fontSize: 28,
             letterSpacing: '0.1em',
             typingSpeed: 0.5,
-            deleteSpeed: 0.5
+            deleteSpeed: 0.5,
+            fontWeight: '400',
+            capLowercaseGap: 0
         };
         setTextLines([...textLines, newLine]);
         // Expand the newly added line
@@ -199,7 +205,9 @@ export default function SVGGenerator() {
             line.fontSize === DEFAULT_VALUES.fontSize &&
             line.letterSpacing === DEFAULT_VALUES.letterSpacing &&
             line.typingSpeed === DEFAULT_VALUES.typingSpeed &&
-            line.deleteSpeed === DEFAULT_VALUES.deleteSpeed
+            line.deleteSpeed === DEFAULT_VALUES.deleteSpeed &&
+            line.fontWeight === DEFAULT_VALUES.fontWeight &&
+            line.capLowercaseGap === DEFAULT_VALUES.capLowercaseGap
         );
     };
 
@@ -215,6 +223,8 @@ export default function SVGGenerator() {
         if (line.letterSpacing !== DEFAULT_VALUES.letterSpacing) minimal.letterSpacing = line.letterSpacing;
         if (line.typingSpeed !== DEFAULT_VALUES.typingSpeed) minimal.typingSpeed = line.typingSpeed;
         if (line.deleteSpeed !== DEFAULT_VALUES.deleteSpeed) minimal.deleteSpeed = line.deleteSpeed;
+        if (line.fontWeight !== DEFAULT_VALUES.fontWeight) minimal.fontWeight = line.fontWeight;
+        if (line.capLowercaseGap !== DEFAULT_VALUES.capLowercaseGap) minimal.capLowercaseGap = line.capLowercaseGap;
         
         return minimal;
     };
@@ -316,7 +326,7 @@ export default function SVGGenerator() {
                                 } shadow-lg`}
                             >
                                 <Github className="w-4 h-4" />
-                                <span className="hidden xs:inline">GitHub</span>
+                                <span className="text-xs sm:text-sm">GitHub</span>
                             </button>
 
                             {/* Star Button */}
@@ -344,7 +354,7 @@ export default function SVGGenerator() {
                                 } shadow-lg`}
                             >
                                 {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                                <span className="hidden xs:inline">{isDarkMode ? 'Light' : 'Dark'}</span>
+                                <span className="text-xs sm:text-sm">{isDarkMode ? 'Light' : 'Dark'}</span>
                             </button>
                         </div>
                     </div>
@@ -515,6 +525,29 @@ export default function SVGGenerator() {
                                                         onChange={(e) => updateTextLine(index, 'deleteSpeed', parseFloat(e.target.value) || 0)}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
+                                                    />
+                                                </div>
+
+                                                {/* Font Weight and Cap-Lowercase Gap */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <InputField 
+                                                        label="Font Weight" 
+                                                        type="text" 
+                                                        value={line.fontWeight} 
+                                                        onChange={(e) => updateTextLine(index, 'fontWeight', e.target.value)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                        placeholder="400, 500, bold"
+                                                    />
+                                                    <InputField 
+                                                        label="Cap-Lowercase Gap (px)" 
+                                                        type="number" 
+                                                        step="0.1"
+                                                        value={line.capLowercaseGap} 
+                                                        onChange={(e) => updateTextLine(index, 'capLowercaseGap', parseFloat(e.target.value) || 0)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                        placeholder="0"
                                                     />
                                                 </div>
                                             </div>

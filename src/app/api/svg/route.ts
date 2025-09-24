@@ -9,6 +9,8 @@ interface TextLine {
   letterSpacing: string | number;
   typingSpeed: number;
   deleteSpeed: number;
+  fontWeight: string;
+  capLowercaseGap: number;
 }
 
 type DeletionBehavior = "stay" | "backspace" | "clear";
@@ -160,14 +162,15 @@ async function fetchGoogleFontCSS(
  * Get unique fonts from text lines and fetch their CSS
  */
 async function getGoogleFontsCSS(textLines: TextLine[]): Promise<string> {
-  const uniqueFonts = new Map<string, string>();
+  const uniqueFonts = new Map<string, Set<string>>();
   let allText = "";
 
-  // Collect unique fonts and all text
+  // Collect unique fonts with their weights and all text
   for (const line of textLines) {
     if (!uniqueFonts.has(line.font)) {
-      uniqueFonts.set(line.font, "400"); // Default weight
+      uniqueFonts.set(line.font, new Set());
     }
+    uniqueFonts.get(line.font)!.add(line.fontWeight || "400");
     allText += line.text;
   }
 
@@ -175,8 +178,10 @@ async function getGoogleFontsCSS(textLines: TextLine[]): Promise<string> {
   const uniqueChars = [...new Set(allText)].join("");
 
   const fontPromises = Array.from(uniqueFonts.entries()).map(
-    ([fontFamily, weight]) =>
-      fetchGoogleFontCSS(fontFamily, weight, uniqueChars)
+    ([fontFamily, weights]) => {
+      const weightString = Array.from(weights).join(";");
+      return fetchGoogleFontCSS(fontFamily, weightString, uniqueChars);
+    }
   );
 
   const fontCSSArray = await Promise.all(fontPromises);
@@ -206,6 +211,8 @@ export async function GET(req: NextRequest) {
       cursorStyle: string;
       border: boolean;
       backgroundColor: string;
+      fontWeight: string;
+      capLowercaseGap: number;
       text?: string;
     };
 
@@ -227,6 +234,8 @@ export async function GET(req: NextRequest) {
       cursorStyle: "straight",
       border: false,
       backgroundColor: "transparent",
+      fontWeight: "400",
+      capLowercaseGap: 0,
     };
 
     // Merge defaults into params if missing
@@ -279,6 +288,12 @@ export async function GET(req: NextRequest) {
               ln && typeof ln.deleteSpeed === "number"
                 ? ln.deleteSpeed
                 : p.deleteSpeed,
+            fontWeight:
+              ln && ln.fontWeight ? ln.fontWeight : p.fontWeight,
+            capLowercaseGap:
+              ln && typeof ln.capLowercaseGap === "number"
+                ? ln.capLowercaseGap
+                : p.capLowercaseGap,
           } as TextLine;
         });
       } else if (p.text) {
@@ -292,6 +307,8 @@ export async function GET(req: NextRequest) {
           letterSpacing: p.letterSpacing,
           typingSpeed: p.typingSpeed,
           deleteSpeed: p.deleteSpeed,
+          fontWeight: p.fontWeight || "400",
+          capLowercaseGap: p.capLowercaseGap || 0,
         }));
       } else {
         // If nothing provided, create an empty line (avoid crash)
@@ -304,6 +321,8 @@ export async function GET(req: NextRequest) {
             letterSpacing: p.letterSpacing,
             typingSpeed: p.typingSpeed,
             deleteSpeed: p.deleteSpeed,
+            fontWeight: p.fontWeight || "400",
+            capLowercaseGap: p.capLowercaseGap || 0,
           },
         ];
       }
@@ -328,6 +347,8 @@ export async function GET(req: NextRequest) {
           letterSpacing: p.letterSpacing,
           typingSpeed: p.typingSpeed,
           deleteSpeed: p.deleteSpeed,
+          fontWeight: p.fontWeight || "400",
+          capLowercaseGap: p.capLowercaseGap || 0,
         },
       ];
     }
@@ -636,15 +657,29 @@ export async function GET(req: NextRequest) {
             letterSpacingPx
           );
 
-          const xForThisGrapheme = fmt(lineStartX + currentX);
+          // Apply capLowercaseGap adjustment for uppercase letters followed by lowercase
+          let capGapAdjustment = 0;
+          if (line.capLowercaseGap !== 0) {
+            const isUppercase = /[A-Z]/.test(grapheme);
+            const hasNextChar = j < textLine.length - 1;
+            if (isUppercase && hasNextChar) {
+              const nextChar = textLine[j + 1];
+              const isNextLowercase = /[a-z]/.test(nextChar);
+              if (isNextLowercase) {
+                capGapAdjustment = line.capLowercaseGap;
+              }
+            }
+          }
+
+          const xForThisGrapheme = fmt(lineStartX + currentX + capGapAdjustment);
           tspanElements += `<tspan x="${xForThisGrapheme}" opacity="0">${grapheme}${typingAnimation}${deletionAnimation}${hideAnimation}</tspan>`;
 
-          beforeCharX.push(lineStartX + currentX);
+          beforeCharX.push(lineStartX + currentX + capGapAdjustment);
           beforeCharY.push(lineYCenter);
 
           currentX += totalWidth;
 
-          afterCharX.push(lineStartX + currentX);
+          afterCharX.push(lineStartX + currentX + capGapAdjustment);
           afterCharY.push(lineYCenter);
 
           cumulativeTypingTime += line.typingSpeed;
@@ -659,7 +694,7 @@ export async function GET(req: NextRequest) {
 
         const textStyle = `font-family:'${line.font}',monospace;font-size:${fmt(
           line.fontSize
-        )}px;fill:${line.color};letter-spacing:${letterSpacingCSS};`;
+        )}px;font-weight:${line.fontWeight};fill:${line.color};letter-spacing:${letterSpacingCSS};`;
         allTextElements.push(
           `<text class="text-common" y="${fmt(
             lineYCenter
