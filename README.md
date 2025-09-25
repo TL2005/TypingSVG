@@ -107,7 +107,8 @@ This project stems from a deep admiration for [DenverCoder1’s readme-typing-sv
 
 A heartfelt, huge thank you to [DenverCoder1](https://github.com/DenverCoder1) for sparking the idea. Typing SVG builds upon that original spark. ❤️
 
-
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=whiteSHADOW1234/TypingSVG&type=Date)](https://www.star-history.com/#whiteSHADOW1234/TypingSVG&Date)
 
 ## Contributing
 
