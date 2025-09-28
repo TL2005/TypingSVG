@@ -43,6 +43,7 @@ const DEFAULT_VALUES = {
     pause: 1000,
     repeat: true,
     backgroundColor: '#ffffff',
+    backgroundOpacity: 1,
     center: true,
     vCenter: true,
     border: true,
@@ -62,6 +63,7 @@ export default function SVGGenerator() {
     const [pause, setPause] = useState(1000);
     const [repeat, setRepeat] = useState(true);
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+    const [backgroundOpacity, setBackgroundOpacity] = useState(1);
     const [center, setCenter] = useState(true);
     const [vCenter, setVCenter] = useState(true);
     const [border, setBorder] = useState(true);
@@ -132,7 +134,7 @@ export default function SVGGenerator() {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [textLines, width, height, pause, repeat, backgroundColor, center, vCenter, border, cursorStyle, deletionBehavior]);
+    }, [textLines, width, height, pause, repeat, backgroundColor, backgroundOpacity, center, vCenter, border, cursorStyle, deletionBehavior]);
 
     const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
         setNotification({ show: true, message, type });
@@ -238,6 +240,7 @@ export default function SVGGenerator() {
         if (pause !== DEFAULT_VALUES.pause) params.append('pause', String(pause));
         if (repeat !== DEFAULT_VALUES.repeat) params.append('repeat', String(repeat));
         if (backgroundColor !== DEFAULT_VALUES.backgroundColor) params.append('backgroundColor', backgroundColor);
+        if (backgroundOpacity !== DEFAULT_VALUES.backgroundOpacity) params.append('backgroundOpacity', String(backgroundOpacity));
         if (center !== DEFAULT_VALUES.center) params.append('center', String(center));
         if (vCenter !== DEFAULT_VALUES.vCenter) params.append('vCenter', String(vCenter));
         if (border !== DEFAULT_VALUES.border) params.append('border', String(border));
@@ -595,6 +598,40 @@ export default function SVGGenerator() {
                                         onChange={(e) => setPause(parseInt(e.target.value, 10) || 0)}
                                         isDarkMode={isDarkMode}
                                     />
+                                </div>
+
+                                {/* Background Opacity */}
+                                <div className="mb-4">
+                                    <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Background Opacity
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative flex-1">
+                                            <input 
+                                                type="range"
+                                                min="0"
+                                                max="1"
+                                                step="0.01"
+                                                value={backgroundOpacity}
+                                                onChange={(e) => setBackgroundOpacity(parseFloat(e.target.value))}
+                                                className={`w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-200 focus:outline-none ${
+                                                    isDarkMode ? 'range-slider-dark' : 'range-slider-light'
+                                                }`}
+                                                style={{
+                                                    background: `linear-gradient(to right, ${
+                                                        isDarkMode 
+                                                            ? `#eab308 0%, #eab308 ${backgroundOpacity * 100}%, #374151 ${backgroundOpacity * 100}%, #374151 100%`
+                                                            : `#3b82f6 0%, #3b82f6 ${backgroundOpacity * 100}%, #e5e7eb ${backgroundOpacity * 100}%, #e5e7eb 100%`
+                                                    })`
+                                                }}
+                                            />
+                                        </div>
+                                        <div className={`flex flex-col items-end min-w-[3.5rem] ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            <span className="text-sm font-mono font-medium">
+                                                {Math.round(backgroundOpacity * 100)}%
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Cursor Style - Custom Dropdown */}

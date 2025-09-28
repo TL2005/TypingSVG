@@ -211,6 +211,7 @@ export async function GET(req: NextRequest) {
       cursorStyle: string;
       border: boolean;
       backgroundColor: string;
+      backgroundOpacity: number;
       fontWeight: string;
       capLowercaseGap: number;
       text?: string;
@@ -234,6 +235,7 @@ export async function GET(req: NextRequest) {
       cursorStyle: "straight",
       border: false,
       backgroundColor: "transparent",
+      backgroundOpacity: 1,
       fontWeight: "400",
       capLowercaseGap: 0,
     };
@@ -939,7 +941,7 @@ export async function GET(req: NextRequest) {
     )}" xmlns="http://www.w3.org/2000/svg">
   <rect x="0.5" y="0.5" width="${fmt(p.width - 1)}" height="${fmt(
       p.height - 1
-    )}" fill="${p.backgroundColor}" stroke="${
+    )}" fill="${p.backgroundColor}" fill-opacity="${p.backgroundOpacity}" stroke="${
       p.border ? "#000" : "none"
     }" stroke-width="1" rx="4"/>
   <defs>

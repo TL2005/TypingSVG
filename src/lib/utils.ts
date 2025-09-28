@@ -18,6 +18,7 @@ const DEFAULT_VALUES = {
     pause: 1000,
     repeat: true,
     backgroundColor: '#ffffff',
+    backgroundOpacity: 1,
     center: true,
     vCenter: true,
     border: true,
@@ -42,6 +43,7 @@ export function validateParams(params: URLSearchParams) {
         const pause = parseInt(params.get('pause') || DEFAULT_VALUES.pause.toString(), 10);
         const repeat = params.get('repeat') !== null ? params.get('repeat') === 'true' : DEFAULT_VALUES.repeat;
         const backgroundColor = params.get('backgroundColor') || DEFAULT_VALUES.backgroundColor;
+        const backgroundOpacity = parseFloat(params.get('backgroundOpacity') || DEFAULT_VALUES.backgroundOpacity.toString());
         const center = params.get('center') !== null ? params.get('center') === 'true' : DEFAULT_VALUES.center;
         const vCenter = params.get('vCenter') !== null ? params.get('vCenter') === 'true' : DEFAULT_VALUES.vCenter;
         const border = params.get('border') !== null ? params.get('border') === 'true' : DEFAULT_VALUES.border;
@@ -60,7 +62,7 @@ export function validateParams(params: URLSearchParams) {
             deletionBehavior = deleteAfterParam === 'true' ? 'backspace' : 'stay';
         }
 
-        if ([width, height, pause, fontRatio].some(isNaN)) {
+        if ([width, height, pause, fontRatio, backgroundOpacity].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
 
@@ -81,6 +83,7 @@ export function validateParams(params: URLSearchParams) {
             pause,
             repeat,
             backgroundColor,
+            backgroundOpacity,
             center,
             vCenter,
             border,
@@ -117,6 +120,7 @@ export function validateParams(params: URLSearchParams) {
         
         const repeat = params.get('repeat') !== null ? params.get('repeat') === 'true' : DEFAULT_VALUES.repeat;
         const backgroundColor = params.get('backgroundColor') || DEFAULT_VALUES.backgroundColor;
+        const backgroundOpacity = parseFloat(params.get('backgroundOpacity') || DEFAULT_VALUES.backgroundOpacity.toString());
         const fontSize = parseInt(params.get('fontSize') || DEFAULT_VALUES.fontSize.toString(), 10);
         const center = params.get('center') !== null ? params.get('center') === 'true' : DEFAULT_VALUES.center;
         const vCenter = params.get('vCenter') !== null ? params.get('vCenter') === 'true' : DEFAULT_VALUES.vCenter;
@@ -136,7 +140,7 @@ export function validateParams(params: URLSearchParams) {
             deletionBehavior = deleteAfterParam === 'true' ? 'backspace' : 'stay';
         }
 
-        if ([width, height, typingSpeed, pause, deleteSpeed, fontSize, fontRatio, capLowercaseGap].some(isNaN)) {
+        if ([width, height, typingSpeed, pause, deleteSpeed, fontSize, fontRatio, capLowercaseGap, backgroundOpacity].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
 
@@ -152,6 +156,7 @@ export function validateParams(params: URLSearchParams) {
             letterSpacing,
             repeat,
             backgroundColor,
+            backgroundOpacity,
             fontSize,
             center,
             vCenter,
