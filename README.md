@@ -88,6 +88,7 @@ The SVG is generated via the `/api/svg` endpoint. Customize it with query parame
 | `deletionBehavior` | How deletion is handled: `stay`, `backspace`, `clear`. | `backspace` |
 | `fontWeight` | Font weight of the text. | `400` |
 | `capLowercaseGap` | Gap between capital and lowercase letters in `px`. | `0` |
+| `backgroundOpacity` | Opacity of the SVG background color. | `1` |
 
 **Notes**
 
