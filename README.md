@@ -41,7 +41,7 @@ Short: **more customization, more control, and more shareable animated text** ðŸ
 
 
 ## Live Demo & Preview
-[![DEMO_GoogleFont](https://github.com/user-attachments/assets/fa2932f0-d724-496d-929d-30c4e541646f)](https://typingsvg.vercel.app/)
+[![DEMO_GIF](https://github.com/user-attachments/assets/e37cb962-57d3-430b-a4ed-717f57495243)](https://typingsvg.vercel.app/)
 link: https://typingsvg.vercel.app/
 
 ## How to Use
