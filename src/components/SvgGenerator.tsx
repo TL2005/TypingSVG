@@ -827,8 +827,8 @@ export default function SVGGenerator() {
                             </div>
                             <div className="space-y-4">
                                 <UrlBox label="URL" value={fullSvgUrl} isDarkMode={isDarkMode} showNotification={showNotification} />
-                                <UrlBox label="Markdown" value={`![Typing SVG](${fullSvgUrl})`} isDarkMode={isDarkMode} showNotification={showNotification} />
-                                <UrlBox label="HTML" value={`<img src="${fullSvgUrl}" alt="Typing SVG" />`} isDarkMode={isDarkMode} showNotification={showNotification} />
+                                <UrlBox label="Markdown" value={`[![Typing SVG](${fullSvgUrl})](https://github.com/whiteSHADOW1234/TypingSVG)`} isDarkMode={isDarkMode} showNotification={showNotification} />
+                                <UrlBox label="HTML" value={`<a href="https://github.com/whiteSHADOW1234/TypingSVG"><img src="${fullSvgUrl}" alt="Typing SVG" /></a>`} isDarkMode={isDarkMode} showNotification={showNotification} />
                             </div>
                         </div>
                     </div>
