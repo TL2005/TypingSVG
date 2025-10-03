@@ -20,7 +20,6 @@
         <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
     </a>
 </p>
-</div>
 
 ## Features
 
@@ -41,7 +40,7 @@ Short: **more customization, more control, and more shareable animated text** ðŸ
 
 
 ## Live Demo & Preview
-[![DEMO_GoogleFont](https://github.com/user-attachments/assets/fa2932f0-d724-496d-929d-30c4e541646f)](https://typingsvg.vercel.app/)
+[![DEMO_GIF](https://github.com/user-attachments/assets/e37cb962-57d3-430b-a4ed-717f57495243)](https://typingsvg.vercel.app/)
 link: https://typingsvg.vercel.app/
 
 ## How to Use
@@ -88,6 +87,7 @@ The SVG is generated via the `/api/svg` endpoint. Customize it with query parame
 | `deletionBehavior` | How deletion is handled: `stay`, `backspace`, `clear`. | `backspace` |
 | `fontWeight` | Font weight of the text. | `400` |
 | `capLowercaseGap` | Gap between capital and lowercase letters in `px`. | `0` |
+| `backgroundOpacity` | Opacity of the SVG background color. | `1` |
 
 **Notes**
 
