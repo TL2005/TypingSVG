@@ -12,6 +12,7 @@ interface TextLine {
     typingSpeed: number;
     deleteSpeed: number;
     fontWeight: string;
+    lineHeight: number;
 }
 
 interface GitHubStats {
@@ -34,6 +35,7 @@ const DEFAULT_VALUES = {
     typingSpeed: 0.5,
     deleteSpeed: 0.5,
     fontWeight: '400',
+    lineHeight: 1.3,
     
     // Global defaults
     width: 450,
@@ -51,8 +53,8 @@ const DEFAULT_VALUES = {
 
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
-        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400' },
-        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400' }
+        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', lineHeight: 1.3 },
+        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', lineHeight: 1.3 }
     ]);
     
     // Global settings
@@ -156,7 +158,8 @@ export default function SVGGenerator() {
             letterSpacing: '0.1em',
             typingSpeed: 0.5,
             deleteSpeed: 0.5,
-            fontWeight: '400'
+            fontWeight: '400',
+            lineHeight: 1.3
         };
         setTextLines([...textLines, newLine]);
         // Expand the newly added line
@@ -205,7 +208,8 @@ export default function SVGGenerator() {
             line.letterSpacing === DEFAULT_VALUES.letterSpacing &&
             line.typingSpeed === DEFAULT_VALUES.typingSpeed &&
             line.deleteSpeed === DEFAULT_VALUES.deleteSpeed &&
-            line.fontWeight === DEFAULT_VALUES.fontWeight
+            line.fontWeight === DEFAULT_VALUES.fontWeight &&
+            line.lineHeight === DEFAULT_VALUES.lineHeight
         );
     };
 
@@ -222,6 +226,7 @@ export default function SVGGenerator() {
         if (line.typingSpeed !== DEFAULT_VALUES.typingSpeed) minimal.typingSpeed = line.typingSpeed;
         if (line.deleteSpeed !== DEFAULT_VALUES.deleteSpeed) minimal.deleteSpeed = line.deleteSpeed;
         if (line.fontWeight !== DEFAULT_VALUES.fontWeight) minimal.fontWeight = line.fontWeight;
+        if (line.lineHeight !== DEFAULT_VALUES.lineHeight) minimal.lineHeight = line.lineHeight;
         
         return minimal;
     };
@@ -526,7 +531,7 @@ export default function SVGGenerator() {
                                                     />
                                                 </div>
 
-                                                {/* Font Weight and Cap-Lowercase Gap */}
+                                                {/* Font Weight and Line Height */}
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <InputField 
                                                         label="Font Weight" 
@@ -536,6 +541,16 @@ export default function SVGGenerator() {
                                                         isDarkMode={isDarkMode}
                                                         size="small"
                                                         placeholder="400, 500, bold"
+                                                    />
+                                                    <InputField 
+                                                        label="Line Height" 
+                                                        type="number" 
+                                                        step="0.1"
+                                                        value={line.lineHeight} 
+                                                        onChange={(e) => updateTextLine(index, 'lineHeight', parseFloat(e.target.value) || 1.3)}
+                                                        isDarkMode={isDarkMode}
+                                                        size="small"
+                                                        placeholder="1.3"
                                                     />
                                                 </div>
                                             </div>

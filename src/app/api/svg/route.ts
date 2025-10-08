@@ -11,6 +11,7 @@ interface TextLine {
   typingSpeed: number;
   deleteSpeed: number;
   fontWeight: string;
+  lineHeight: number;
 }
 
 type DeletionBehavior = "stay" | "backspace" | "clear";
@@ -328,6 +329,10 @@ export async function GET(req: NextRequest) {
                 : p.deleteSpeed,
             fontWeight:
               ln && ln.fontWeight ? ln.fontWeight : p.fontWeight,
+            lineHeight:
+              ln && typeof ln.lineHeight === "number"
+                ? ln.lineHeight
+                : 1.3,
           } as TextLine;
         });
       } else if (p.text) {
@@ -342,6 +347,7 @@ export async function GET(req: NextRequest) {
           typingSpeed: p.typingSpeed,
           deleteSpeed: p.deleteSpeed,
           fontWeight: p.fontWeight || "400",
+          lineHeight: 1.3,
         }));
       } else {
         // If nothing provided, create an empty line (avoid crash)
@@ -355,6 +361,7 @@ export async function GET(req: NextRequest) {
             typingSpeed: p.typingSpeed,
             deleteSpeed: p.deleteSpeed,
             fontWeight: p.fontWeight || "400",
+            lineHeight: 1.3,
           },
         ];
       }
@@ -380,6 +387,7 @@ export async function GET(req: NextRequest) {
           typingSpeed: p.typingSpeed,
           deleteSpeed: p.deleteSpeed,
           fontWeight: p.fontWeight || "400",
+          lineHeight: 1.3,
         },
       ];
     }
@@ -445,7 +453,7 @@ export async function GET(req: NextRequest) {
       for (const line of textLines) {
         const content = line.text;
         const lines = content.split("\n");
-        const lineHeight = line.fontSize * 1.3;
+        const lineHeight = line.fontSize * line.lineHeight;
         const letterSpacingPx = parseLetterSpacing(
           line.letterSpacing,
           line.fontSize
@@ -515,7 +523,7 @@ export async function GET(req: NextRequest) {
         0
       );
 
-      const lineHeight = line.fontSize * 1.3;
+      const lineHeight = line.fontSize * line.lineHeight;
       const letterSpacingPx = parseLetterSpacing(
         line.letterSpacing,
         line.fontSize

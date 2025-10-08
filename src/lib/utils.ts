@@ -10,6 +10,7 @@ const DEFAULT_VALUES = {
     typingSpeed: 0.5,
     deleteSpeed: 0.5,
     fontWeight: '400',
+    lineHeight: 1.3,
     
     // Global defaults
     width: 450,
