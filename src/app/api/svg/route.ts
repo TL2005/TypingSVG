@@ -11,7 +11,6 @@ interface TextLine {
   typingSpeed: number;
   deleteSpeed: number;
   fontWeight: string;
-  capLowercaseGap: number;
 }
 
 type DeletionBehavior = "stay" | "backspace" | "clear";
@@ -252,7 +251,6 @@ export async function GET(req: NextRequest) {
       backgroundColor: string;
       backgroundOpacity: number;
       fontWeight: string;
-      capLowercaseGap: number;
       text?: string;
     };
 
@@ -276,7 +274,6 @@ export async function GET(req: NextRequest) {
       backgroundColor: "transparent",
       backgroundOpacity: 1,
       fontWeight: "400",
-      capLowercaseGap: 0,
     };
 
     // Merge defaults into params if missing
@@ -331,10 +328,6 @@ export async function GET(req: NextRequest) {
                 : p.deleteSpeed,
             fontWeight:
               ln && ln.fontWeight ? ln.fontWeight : p.fontWeight,
-            capLowercaseGap:
-              ln && typeof ln.capLowercaseGap === "number"
-                ? ln.capLowercaseGap
-                : p.capLowercaseGap,
           } as TextLine;
         });
       } else if (p.text) {
@@ -349,7 +342,6 @@ export async function GET(req: NextRequest) {
           typingSpeed: p.typingSpeed,
           deleteSpeed: p.deleteSpeed,
           fontWeight: p.fontWeight || "400",
-          capLowercaseGap: p.capLowercaseGap || 0,
         }));
       } else {
         // If nothing provided, create an empty line (avoid crash)
@@ -363,7 +355,6 @@ export async function GET(req: NextRequest) {
             typingSpeed: p.typingSpeed,
             deleteSpeed: p.deleteSpeed,
             fontWeight: p.fontWeight || "400",
-            capLowercaseGap: p.capLowercaseGap || 0,
           },
         ];
       }
@@ -389,7 +380,6 @@ export async function GET(req: NextRequest) {
           typingSpeed: p.typingSpeed,
           deleteSpeed: p.deleteSpeed,
           fontWeight: p.fontWeight || "400",
-          capLowercaseGap: p.capLowercaseGap || 0,
         },
       ];
     }

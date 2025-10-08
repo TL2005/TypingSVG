@@ -10,7 +10,6 @@ const DEFAULT_VALUES = {
     typingSpeed: 0.5,
     deleteSpeed: 0.5,
     fontWeight: '400',
-    capLowercaseGap: 0,
     
     // Global defaults
     width: 450,
@@ -76,7 +75,6 @@ export function validateParams(params: URLSearchParams) {
             fontSize: DEFAULT_VALUES.fontSize,
             deleteSpeed: DEFAULT_VALUES.deleteSpeed,
             fontWeight: DEFAULT_VALUES.fontWeight,
-            capLowercaseGap: DEFAULT_VALUES.capLowercaseGap,
             // Active fields for new format
             width,
             height,
@@ -102,7 +100,6 @@ export function validateParams(params: URLSearchParams) {
         const deleteSpeed = parseFloat(params.get('deleteSpeed') || DEFAULT_VALUES.deleteSpeed.toString());
         const pause = parseInt(params.get('pause') || DEFAULT_VALUES.pause.toString(), 10);
         const fontWeight = params.get('fontWeight') || DEFAULT_VALUES.fontWeight;
-        const capLowercaseGap = parseFloat(params.get('capLowercaseGap') || DEFAULT_VALUES.capLowercaseGap.toString());
         
         // Handle letter spacing - can be string (CSS value) or number (treated as em)
         const letterSpacingParam = params.get('letterSpacing') || DEFAULT_VALUES.letterSpacing.toString();
@@ -140,7 +137,7 @@ export function validateParams(params: URLSearchParams) {
             deletionBehavior = deleteAfterParam === 'true' ? 'backspace' : 'stay';
         }
 
-        if ([width, height, typingSpeed, pause, deleteSpeed, fontSize, fontRatio, capLowercaseGap, backgroundOpacity].some(isNaN)) {
+        if ([width, height, typingSpeed, pause, deleteSpeed, fontSize, fontRatio, backgroundOpacity].some(isNaN)) {
             throw new Error('Invalid numeric parameter');
         }
 
@@ -164,8 +161,7 @@ export function validateParams(params: URLSearchParams) {
             cursorStyle,
             fontRatio,
             deletionBehavior,
-            fontWeight,
-            capLowercaseGap
+            fontWeight
         };
     }
 }

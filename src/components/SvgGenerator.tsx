@@ -12,7 +12,6 @@ interface TextLine {
     typingSpeed: number;
     deleteSpeed: number;
     fontWeight: string;
-    capLowercaseGap: number;
 }
 
 interface GitHubStats {
@@ -35,7 +34,6 @@ const DEFAULT_VALUES = {
     typingSpeed: 0.5,
     deleteSpeed: 0.5,
     fontWeight: '400',
-    capLowercaseGap: 0,
     
     // Global defaults
     width: 450,
@@ -53,8 +51,8 @@ const DEFAULT_VALUES = {
 
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
-        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', capLowercaseGap: 0 },
-        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', capLowercaseGap: 0 }
+        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400' },
+        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400' }
     ]);
     
     // Global settings
@@ -158,8 +156,7 @@ export default function SVGGenerator() {
             letterSpacing: '0.1em',
             typingSpeed: 0.5,
             deleteSpeed: 0.5,
-            fontWeight: '400',
-            capLowercaseGap: 0
+            fontWeight: '400'
         };
         setTextLines([...textLines, newLine]);
         // Expand the newly added line
@@ -208,8 +205,7 @@ export default function SVGGenerator() {
             line.letterSpacing === DEFAULT_VALUES.letterSpacing &&
             line.typingSpeed === DEFAULT_VALUES.typingSpeed &&
             line.deleteSpeed === DEFAULT_VALUES.deleteSpeed &&
-            line.fontWeight === DEFAULT_VALUES.fontWeight &&
-            line.capLowercaseGap === DEFAULT_VALUES.capLowercaseGap
+            line.fontWeight === DEFAULT_VALUES.fontWeight
         );
     };
 
@@ -226,7 +222,6 @@ export default function SVGGenerator() {
         if (line.typingSpeed !== DEFAULT_VALUES.typingSpeed) minimal.typingSpeed = line.typingSpeed;
         if (line.deleteSpeed !== DEFAULT_VALUES.deleteSpeed) minimal.deleteSpeed = line.deleteSpeed;
         if (line.fontWeight !== DEFAULT_VALUES.fontWeight) minimal.fontWeight = line.fontWeight;
-        if (line.capLowercaseGap !== DEFAULT_VALUES.capLowercaseGap) minimal.capLowercaseGap = line.capLowercaseGap;
         
         return minimal;
     };
@@ -541,16 +536,6 @@ export default function SVGGenerator() {
                                                         isDarkMode={isDarkMode}
                                                         size="small"
                                                         placeholder="400, 500, bold"
-                                                    />
-                                                    <InputField 
-                                                        label="Cap-Lowercase Gap (px)" 
-                                                        type="number" 
-                                                        step="0.1"
-                                                        value={line.capLowercaseGap} 
-                                                        onChange={(e) => updateTextLine(index, 'capLowercaseGap', parseFloat(e.target.value) || 0)}
-                                                        isDarkMode={isDarkMode}
-                                                        size="small"
-                                                        placeholder="0"
                                                     />
                                                 </div>
                                             </div>
