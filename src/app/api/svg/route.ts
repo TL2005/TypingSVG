@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateParams } from "@/lib/utils";
+import * as opentype from "opentype.js";
 
 interface TextLine {
   text: string;
@@ -100,12 +101,13 @@ function getCursorSvgShape(
 
 /**
  * Fetch Google Font CSS and convert font URLs to base64 data URIs
+ * Also parse the font to extract glyph metrics
  */
 async function fetchGoogleFontCSS(
   fontFamily: string,
   weight: string = "400",
   text: string = ""
-): Promise<string> {
+): Promise<{ css: string; fontData: ArrayBuffer | null }> {
   try {
     const url = `https://fonts.googleapis.com/css2?${new URLSearchParams({
       family: `${fontFamily}:wght@${weight}`,
@@ -126,6 +128,7 @@ async function fetchGoogleFontCSS(
     }
 
     let css = await response.text();
+    let firstFontData: ArrayBuffer | null = null;
 
     // Find all font file URLs and convert them to base64 data URIs
     const urlRegex =
@@ -140,6 +143,12 @@ async function fetchGoogleFontCSS(
         const fontResponse = await fetch(fontUrl);
         if (fontResponse.ok) {
           const fontBuffer = await fontResponse.arrayBuffer();
+          
+          // Store the first font data for parsing
+          if (!firstFontData) {
+            firstFontData = fontBuffer;
+          }
+          
           const base64Font = Buffer.from(fontBuffer).toString("base64");
           const dataUri = `data:font/${fontFormat};base64,${base64Font}`;
 
@@ -151,17 +160,20 @@ async function fetchGoogleFontCSS(
       }
     }
 
-    return css;
+    return { css, fontData: firstFontData };
   } catch (error) {
     console.warn(`Failed to fetch Google Font: ${fontFamily}`, error);
-    return "";
+    return { css: "", fontData: null };
   }
 }
 
 /**
- * Get unique fonts from text lines and fetch their CSS
+ * Get unique fonts from text lines and fetch their CSS + font data
  */
-async function getGoogleFontsCSS(textLines: TextLine[]): Promise<string> {
+async function getGoogleFontsData(textLines: TextLine[]): Promise<{
+  css: string;
+  fonts: Map<string, opentype.Font | null>;
+}> {
   const uniqueFonts = new Map<string, Set<string>>();
   let allText = "";
 
@@ -178,14 +190,41 @@ async function getGoogleFontsCSS(textLines: TextLine[]): Promise<string> {
   const uniqueChars = [...new Set(allText)].join("");
 
   const fontPromises = Array.from(uniqueFonts.entries()).map(
-    ([fontFamily, weights]) => {
+    async ([fontFamily, weights]) => {
       const weightString = Array.from(weights).join(";");
-      return fetchGoogleFontCSS(fontFamily, weightString, uniqueChars);
+      const result = await fetchGoogleFontCSS(fontFamily, weightString, uniqueChars);
+      
+      let parsedFont: opentype.Font | null = null;
+      if (result.fontData) {
+        try {
+          parsedFont = opentype.parse(result.fontData);
+        } catch (e) {
+          console.warn(`Failed to parse font ${fontFamily}:`, e);
+        }
+      }
+      
+      return {
+        family: fontFamily,
+        css: result.css,
+        font: parsedFont
+      };
     }
   );
 
-  const fontCSSArray = await Promise.all(fontPromises);
-  return fontCSSArray.filter((css) => css.length > 0).join("\n");
+  const fontResults = await Promise.all(fontPromises);
+  const cssArray = fontResults.filter(r => r.css.length > 0).map(r => r.css);
+  const fontsMap = new Map<string, opentype.Font | null>();
+  
+  fontResults.forEach(r => {
+    if (r.font) {
+      fontsMap.set(r.family, r.font);
+    }
+  });
+
+  return {
+    css: cssArray.join("\n"),
+    fonts: fontsMap
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -355,8 +394,8 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Fetch Google Fonts CSS
-    const googleFontsCSS = await getGoogleFontsCSS(textLines);
+    // Fetch Google Fonts CSS and font data
+    const { css: googleFontsCSS, fonts: parsedFonts } = await getGoogleFontsData(textLines);
 
     // Formatter to trim decimals and remove trailing zeros
     const fmt = (n: number) => {
@@ -371,62 +410,43 @@ export async function GET(req: NextRequest) {
     const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 
     /**
-     * Get character width with better handling for emojis and monospace
+     * Get character width using actual font metrics from opentype.js
      */
     const getGraphemeWidth = (
       grapheme: string,
       fontSize: number,
-      fontRatio: number,
-      isLastChar: boolean,
+      font: opentype.Font | null,
       letterSpacingPx: number
-    ): { charWidth: number; totalWidth: number } => {
+    ): number => {
       const isEmoji = emojiRegex.test(grapheme);
       if (isEmoji) {
-        const charWidth = fontSize;
-        const totalWidth = charWidth + (isLastChar ? 0 : letterSpacingPx);
-        return { charWidth, totalWidth };
+        return fontSize + letterSpacingPx;
       }
-
-      // Heuristic-based advance width estimation for proportional fonts.
-      const veryWideChars = /[MW]/;
-      const wideChars = /[O@#%&<>]/;
-      const narrowChars = /[ilI,.;!:'\"`\\|\\/\\(\\)\\[\\]{}?]/;
-      const upper = /[A-Z]/;
-      const digit = /[0-9]/;
-      const punctuation = /[-_=+\\*~^]/;
-
-      // base multiplier derived from fontRatio but allow adjustments
-      let multiplier = p.fontRatio;
-
-      if (upper.test(grapheme)) {
-        multiplier *= 1.0;
-      } else if (digit.test(grapheme)) {
-        multiplier *= 0.9;
-      } else if (punctuation.test(grapheme)) {
-        multiplier *= 0.7;
-      } else if (veryWideChars.test(grapheme)) {
-        multiplier *= 1.35;
-      } else if (wideChars.test(grapheme)) {
-        multiplier *= 1.1;
-      } else if (narrowChars.test(grapheme)) {
-        multiplier *= 1;
-      } else {
-        multiplier *= 1.0;
+      
+      // Use actual font metrics if available
+      if (font) {
+        try {
+          const glyph = font.charToGlyph(grapheme);
+          if (glyph) {
+            // Get the advance width from the glyph
+            const advanceWidth = glyph.advanceWidth || 0;
+            // Convert from font units to pixels
+            const scale = fontSize / font.unitsPerEm;
+            const charWidth = advanceWidth * scale;
+            return charWidth + letterSpacingPx;
+          }
+        } catch (e) {
+          // Fall through to approximation
+        }
       }
-
-      // compute width and enforce a sensible minimum advance to prevent overlap
-      const charWidth = Math.max(p.fontSize * multiplier, p.fontSize * 0.25);
-      const totalWidth = charWidth + (isLastChar ? 0 : letterSpacingPx);
-
-      return { charWidth, totalWidth };
+      
+      // Fallback approximation if font not available
+      return fontSize * 0.5 + letterSpacingPx;
     };
 
-    /**
-     * Calculate the total dimensions of all text lines for proper centering
-     */
-    function calculateTotalTextDimensions(
+    // Approximate dimensions for initial positioning - actual layout handled by SVG
+    function estimateTextDimensions(
       textLines: TextLine[],
-      fontRatio: number,
       deletionBehavior: DeletionBehavior
     ) {
       let totalHeight = 0;
@@ -440,27 +460,19 @@ export async function GET(req: NextRequest) {
           line.letterSpacing,
           line.fontSize
         );
-
+        const font = parsedFonts.get(line.font) || null;
+        
         for (const textLine of lines) {
           let lineWidth = 0;
           if (textLine.length > 0) {
             const graphemes = [...textLine];
-            graphemes.forEach((grapheme, idx) => {
-              const isLastChar = idx === graphemes.length - 1;
-              const { totalWidth } = getGraphemeWidth(
-                grapheme,
-                line.fontSize,
-                fontRatio,
-                isLastChar,
-                letterSpacingPx
-              );
-              lineWidth += totalWidth;
+            graphemes.forEach((grapheme) => {
+              lineWidth += getGraphemeWidth(grapheme, line.fontSize, font, letterSpacingPx);
             });
           }
           maxWidth = Math.max(maxWidth, lineWidth);
         }
 
-        // For 'stay' behavior, accumulate height. For others, use max height
         if (deletionBehavior === "stay") {
           totalHeight += lines.length * lineHeight;
         } else {
@@ -471,10 +483,9 @@ export async function GET(req: NextRequest) {
       return { totalWidth: maxWidth, totalHeight };
     }
 
-    // Calculate total dimensions for proper centering when using 'stay' behavior
-    const totalDimensions = calculateTotalTextDimensions(
+    // Estimate dimensions for rough centering - SVG will handle actual layout
+    const totalDimensions = estimateTextDimensions(
       textLines,
-      p.fontRatio,
       deletionBehavior
     );
     const globalTextBlockYOffset = p.vCenter
@@ -520,19 +531,14 @@ export async function GET(req: NextRequest) {
         line.fontSize
       );
 
+      // Rough estimate for positioning - actual width determined by font metrics
+      const font = parsedFonts.get(line.font) || null;
+      
       const lineCalculations = linesAsGraphemes.map((textLine) => {
         let cumulativeWidth = 0;
         if (textLine.length > 0) {
-          textLine.forEach((grapheme, idx) => {
-            const isLastChar = idx === textLine.length - 1;
-            const { totalWidth } = getGraphemeWidth(
-              grapheme,
-              line.fontSize,
-              p.fontRatio,
-              isLastChar,
-              letterSpacingPx
-            );
-            cumulativeWidth += totalWidth;
+          textLine.forEach((grapheme) => {
+            cumulativeWidth += getGraphemeWidth(grapheme, line.fontSize, font, letterSpacingPx);
           });
         }
         return { width: cumulativeWidth };
@@ -584,10 +590,9 @@ export async function GET(req: NextRequest) {
       const centerX = p.width / 2;
       const cursorYOffset = getCursorYOffset(p.cursorStyle, line.fontSize);
       const cursorXOffset = line.fontSize * 0.12;
-
       const deleteStart = cycleOffset + totalTypingDuration + pauseDuration;
       let globalCharIndex = 0;
-
+      
       // For each visual line inside this content block
       for (let i = 0; i < linesAsGraphemes.length; i++) {
         const textLine = linesAsGraphemes[i];
@@ -597,7 +602,7 @@ export async function GET(req: NextRequest) {
           ? centerX - lineWidth / 2
           : textBlockXOffset;
 
-        let currentX = 0; // relative offset used for computing x position per grapheme
+        let currentX = 0;
         let tspanElements = "";
 
         for (let j = 0; j < textLine.length; j++) {
@@ -609,9 +614,8 @@ export async function GET(req: NextRequest) {
 
           let typingAnimation = "";
           if (p.repeat && deletionBehavior === "stay") {
-            // Reset at the very start of each cycle, then show at its scheduled time + epsilon.
             const resetAnim = `<animate attributeName="opacity" to="0" dur="0s" begin="cycle.begin" fill="freeze"/>`;
-            const showBegin = `cycle.begin + ${fmt(typingBegin + 0.02)}s`; // slightly bigger epsilon to avoid timing ties
+            const showBegin = `cycle.begin + ${fmt(typingBegin + 0.02)}s`;
             const showAnim = `<animate attributeName="opacity" values="0;1" dur="0.01s" begin="${showBegin}" fill="freeze"/>`;
             typingAnimation = resetAnim + showAnim;
           } else {
@@ -621,9 +625,7 @@ export async function GET(req: NextRequest) {
           let deletionAnimation = "";
           let hideAnimation = "";
 
-          // Handle different deletion behaviors
           if (deletionBehavior === "backspace" && totalGraphemeCount > 0) {
-            // Character-by-character deletion (original behavior)
             const deletionOrderIndex = totalGraphemeCount - 1 - globalCharIndex;
             const deletionBegin =
               deleteStart + deletionOrderIndex * line.deleteSpeed;
@@ -632,56 +634,32 @@ export async function GET(req: NextRequest) {
               : `${fmt(deletionBegin)}s`;
             deletionAnimation = `<animate attributeName="opacity" from="1" to="0" dur="0.01s" begin="${deletionBeginAttr}" fill="freeze"/>`;
           } else if (deletionBehavior === "clear") {
-            // Instant clear all text at once
             const clearBegin = deleteStart;
             const clearBeginAttr = p.repeat
               ? `cycle.begin + ${fmt(clearBegin)}s`
               : `${fmt(clearBegin)}s`;
             deletionAnimation = `<animate attributeName="opacity" from="1" to="0" dur="0.01s" begin="${clearBeginAttr}" fill="freeze"/>`;
           } else if (deletionBehavior === "stay") {
-            // Text stays visible - only hide at the very end of ALL cycles for repeat mode
             if (p.repeat) {
-              // Use precomputed allLinesTypingDuration (already includes pause after last line)
               const hideBeginAttr = `cycle.begin + ${fmt(
                 allLinesTypingDuration
               )}s`;
               hideAnimation = `<animate attributeName="opacity" to="0" dur="0.01s" begin="${hideBeginAttr}" fill="freeze"/>`;
             }
-            // For non-repeat mode with 'stay', text remains visible permanently
           }
 
-          const isLastGraphemeOfLine = j === textLine.length - 1;
-          const { charWidth, totalWidth } = getGraphemeWidth(
-            grapheme,
-            line.fontSize,
-            p.fontRatio,
-            isLastGraphemeOfLine,
-            letterSpacingPx
-          );
-
-          // Apply capLowercaseGap adjustment for uppercase letters followed by lowercase
-          let capGapAdjustment = 0;
-          if (line.capLowercaseGap !== 0) {
-            const isUppercase = /[A-Z]/.test(grapheme);
-            const hasNextChar = j < textLine.length - 1;
-            if (isUppercase && hasNextChar) {
-              const nextChar = textLine[j + 1];
-              const isNextLowercase = /[a-z]/.test(nextChar);
-              if (isNextLowercase) {
-                capGapAdjustment = line.capLowercaseGap;
-              }
-            }
-          }
-
-          const xForThisGrapheme = fmt(lineStartX + currentX + capGapAdjustment);
+          // Get accurate character width from font metrics
+          const charWidth = getGraphemeWidth(grapheme, line.fontSize, font, letterSpacingPx);
+          
+          const xForThisGrapheme = fmt(lineStartX + currentX);
           tspanElements += `<tspan x="${xForThisGrapheme}" opacity="0">${grapheme}${typingAnimation}${deletionAnimation}${hideAnimation}</tspan>`;
 
-          beforeCharX.push(lineStartX + currentX + capGapAdjustment);
+          beforeCharX.push(lineStartX + currentX);
           beforeCharY.push(lineYCenter);
 
-          currentX += totalWidth;
+          currentX += charWidth;
 
-          afterCharX.push(lineStartX + currentX + capGapAdjustment);
+          afterCharX.push(lineStartX + currentX);
           afterCharY.push(lineYCenter);
 
           cumulativeTypingTime += line.typingSpeed;
@@ -727,7 +705,6 @@ export async function GET(req: NextRequest) {
 
       // Deletion cursor animations
       if (deletionBehavior === "backspace" && totalGraphemeCount > 0) {
-        // Character-by-character deletion cursor movement
         const deletionXValues: string[] = [];
         const deletionYValues: string[] = [];
 
@@ -752,7 +729,6 @@ export async function GET(req: NextRequest) {
           totalGraphemeCount * line.deleteSpeed
         )}s" calcMode="discrete" begin="${deletionBeginAttr}" fill="freeze"/>`;
       } else if (deletionBehavior === "clear" && totalGraphemeCount > 0) {
-        // For instant clear, move cursor to beginning immediately
         const clearBeginRel = cycleOffset + totalTypingDuration + pauseDuration;
         const clearBeginAttr = p.repeat
           ? `cycle.begin + ${fmt(clearBeginRel)}s`
@@ -777,12 +753,10 @@ export async function GET(req: NextRequest) {
         const nextContentIndex = (contentIndex + 1) % textLines.length;
 
         if (!isLast || p.repeat) {
-          // Calculate next cursor position based on deletion behavior
           let targetCursorPos;
 
           if (deletionBehavior === "stay") {
             if (isLast && p.repeat) {
-              // Reset to beginning for repeat - use global positioning
               targetCursorPos = {
                 x: globalTextBlockXOffset + cursorXOffset,
                 y:
@@ -791,7 +765,6 @@ export async function GET(req: NextRequest) {
                   getCursorYOffset(p.cursorStyle, textLines[0].fontSize),
               };
             } else {
-              // Move to next line below current content - use global positioning
               const nextLine = textLines[nextContentIndex];
               const nextLineHeight = nextLine.fontSize * 1.3;
               targetCursorPos = {
@@ -804,7 +777,6 @@ export async function GET(req: NextRequest) {
               };
             }
           } else {
-            // For 'backspace' and 'clear', cursor returns to same position or moves to next line
             const nextLine = textLines[nextContentIndex];
             const nextTextBlockHeight =
               nextLine.text.split("\n").length * nextLine.fontSize * 1.3;
