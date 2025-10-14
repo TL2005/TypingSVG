@@ -33,7 +33,6 @@ There are other typing-SVG projects out there — but Typing SVG focuses on flex
 - **Multiple cursor styles**: `straight`, `underline`, `block`, or `blank`.
 - **Fine-grained controls**: Pause duration, repeat toggle, border, background, and more.
 - **Font weight**: Control the boldness of the font.
-- **Cap/lowercase gap adjustment** Tweak the spacing between uppercase and following lowercase letters to correct uneven visual gaps in non-monospaced fonts.
 - **Server-rendered**: SVG is fully rendered server-side — fonts are inlined so consumers don't need to load fonts on the client.
 
 Short: **more customization, more control, and more shareable animated text** 🎨
@@ -86,7 +85,6 @@ The SVG is generated via the `/api/svg` endpoint. Customize it with query parame
 | `cursorStyle` | Cursor style (`straight`, `underline`, `block`, `blank`). | `straight` |
 | `deletionBehavior` | How deletion is handled: `stay`, `backspace`, `clear`. | `backspace` |
 | `fontWeight` | Font weight of the text. | `400` |
-| `capLowercaseGap` | Gap between capital and lowercase letters in `px`. | `0` |
 | `backgroundOpacity` | Opacity of the SVG background color. | `1` |
 
 **Notes**
