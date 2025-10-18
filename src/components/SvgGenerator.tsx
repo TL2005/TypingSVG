@@ -57,6 +57,9 @@ export default function SVGGenerator() {
         { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', lineHeight: 1.3 }
     ]);
     
+    // Speed unit toggle state: true = s/char, false = char/s
+    const [speedUnitMode, setSpeedUnitMode] = useState(true);
+    
     // Global settings
     const [width, setWidth] = useState(450);
     const [height, setHeight] = useState(150);
@@ -135,6 +138,27 @@ export default function SVGGenerator() {
 
         return () => clearTimeout(timer);
     }, [textLines, width, height, pause, repeat, backgroundColor, backgroundOpacity, center, vCenter, border, cursorStyle, deletionBehavior]);
+
+    // Helper functions for speed unit conversion
+    const convertToSecondsPerChar = (value: number, isSecondsPerChar: boolean): number => {
+        return isSecondsPerChar ? value : (value > 0 ? 1 / value : 0.5);
+    };
+
+    const convertFromSecondsPerChar = (value: number, toSecondsPerChar: boolean): number => {
+        return toSecondsPerChar ? value : (value > 0 ? 1 / value : 2);
+    };
+
+    const getSpeedDisplayValue = (speedValue: number, isSecondsPerChar: boolean): number => {
+        return convertFromSecondsPerChar(speedValue, isSecondsPerChar);
+    };
+
+    const handleSpeedChange = (value: number, isSecondsPerChar: boolean): number => {
+        return convertToSecondsPerChar(value, isSecondsPerChar);
+    };
+
+    const toggleSpeedUnit = () => {
+        setSpeedUnitMode(!speedUnitMode);
+    };
 
     const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
         setNotification({ show: true, message, type });
@@ -511,23 +535,35 @@ export default function SVGGenerator() {
                                                 
                                                 {/* Typing Speed and Delete Speed */}
                                                 <div className="grid grid-cols-2 gap-3">
-                                                    <InputField 
-                                                        label="Typing Speed (s/char)" 
+                                                    <SpeedInputField 
+                                                        label="Typing Speed" 
                                                         type="number" 
                                                         step="0.01"
-                                                        value={line.typingSpeed} 
-                                                        onChange={(e) => updateTextLine(index, 'typingSpeed', parseFloat(e.target.value) || 0)}
+                                                        value={getSpeedDisplayValue(line.typingSpeed, speedUnitMode)} 
+                                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                            const inputValue = parseFloat(e.target.value) || 0;
+                                                            const convertedValue = handleSpeedChange(inputValue, speedUnitMode);
+                                                            updateTextLine(index, 'typingSpeed', convertedValue);
+                                                        }}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
+                                                        speedUnitMode={speedUnitMode}
+                                                        onToggleUnit={toggleSpeedUnit}
                                                     />
-                                                    <InputField 
-                                                        label="Delete Speed (s/char)" 
+                                                    <SpeedInputField 
+                                                        label="Delete Speed" 
                                                         type="number" 
                                                         step="0.01"
-                                                        value={line.deleteSpeed} 
-                                                        onChange={(e) => updateTextLine(index, 'deleteSpeed', parseFloat(e.target.value) || 0)}
+                                                        value={getSpeedDisplayValue(line.deleteSpeed, speedUnitMode)} 
+                                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                            const inputValue = parseFloat(e.target.value) || 0;
+                                                            const convertedValue = handleSpeedChange(inputValue, speedUnitMode);
+                                                            updateTextLine(index, 'deleteSpeed', convertedValue);
+                                                        }}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
+                                                        speedUnitMode={speedUnitMode}
+                                                        onToggleUnit={toggleSpeedUnit}
                                                     />
                                                 </div>
 
@@ -1056,5 +1092,58 @@ const RadioOption = ({
                 {description}
             </p>
         </div>
+    </div>
+);
+
+// SpeedInputField component with clickable unit toggle
+const SpeedInputField = ({ 
+    label, 
+    type = "number", 
+    value, 
+    onChange, 
+    isDarkMode, 
+    className = "", 
+    step,
+    size = "normal",
+    placeholder,
+    speedUnitMode,
+    onToggleUnit,
+    ...props 
+}: {
+    label: string;
+    type?: string;
+    value: string | number;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    isDarkMode: boolean;
+    className?: string;
+    step?: string;
+    size?: "normal" | "small";
+    placeholder?: string;
+    speedUnitMode: boolean;
+    onToggleUnit: () => void;
+    [key: string]: unknown;
+}) => (
+    <div>
+        <label 
+            className={`block font-medium mb-1 ${size === "small" ? "text-xs" : "text-sm"} ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} cursor-pointer`}
+            onClick={onToggleUnit}
+        >
+            {label} {speedUnitMode ? '(s/char)' : '(char/s)'}
+        </label>
+        <input 
+            type={type}
+            step={step}
+            value={value} 
+            onChange={onChange} 
+            placeholder={placeholder}
+            className={`w-full px-3 rounded-lg border transition-all duration-200 ${
+                size === "small" ? "py-1.5 text-sm" : "py-2"
+            } ${
+                isDarkMode 
+                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 placeholder-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 placeholder-gray-400'
+            } ${className}`}
+            {...props}
+        />
     </div>
 );
