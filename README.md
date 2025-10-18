@@ -31,6 +31,7 @@ There are other typing-SVG projects out there — but Typing SVG focuses on flex
 - **Accurate spacing & alignment**: Preserves multiple spaces, newlines and supports centering (horizontal/vertical).
 - **Flexible deletion behaviors**: `backspace`, `clear`, or `stay` with configurable delete speed.
 - **Multiple cursor styles**: `straight`, `underline`, `block`, or `blank`.
+- **Intuitive speed controls**: Click on speed labels to toggle between `(s/char)` and `(char/s)` units for more intuitive input.
 - **Fine-grained controls**: Pause duration, repeat toggle, border, background, and more.
 - **Font weight**: Control the boldness of the font.
 - **Server-rendered**: SVG is fully rendered server-side — fonts are inlined so consumers don't need to load fonts on the client.
