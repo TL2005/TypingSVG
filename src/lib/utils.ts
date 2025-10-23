@@ -7,8 +7,8 @@ const DEFAULT_VALUES = {
     color: '#000000',
     fontSize: 28,
     letterSpacing: '0.1em',
-    typingSpeed: 0.5,
-    deleteSpeed: 0.5,
+    typingSpeed: 0.5, // s/char (API format)
+    deleteSpeed: 0.5, // s/char (API format)
     fontWeight: '400',
     lineHeight: 1.3,
     

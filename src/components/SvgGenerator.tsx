@@ -32,8 +32,8 @@ const DEFAULT_VALUES = {
     color: '#000000',
     fontSize: 28,
     letterSpacing: '0.1em',
-    typingSpeed: 0.5,
-    deleteSpeed: 0.5,
+    typingSpeed: 2, // chars/s (1/0.5 = 2)
+    deleteSpeed: 2, // chars/s (1/0.5 = 2)
     fontWeight: '400',
     lineHeight: 1.3,
     
@@ -53,12 +53,9 @@ const DEFAULT_VALUES = {
 
 export default function SVGGenerator() {
     const [textLines, setTextLines] = useState<TextLine[]>([
-        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', lineHeight: 1.3 },
-        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 0.5, deleteSpeed: 0.5, fontWeight: '400', lineHeight: 1.3 }
+        { text: 'Hello, World!', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 2, deleteSpeed: 2, fontWeight: '400', lineHeight: 1.3 },
+        { text: 'And Emojis! 😀🚀', font: 'Courier Prime', color: '#000000', fontSize: 28, letterSpacing: '0.1em', typingSpeed: 2, deleteSpeed: 2, fontWeight: '400', lineHeight: 1.3 }
     ]);
-    
-    // Speed unit toggle state: true = s/char, false = char/s
-    const [speedUnitMode, setSpeedUnitMode] = useState(true);
     
     // Global settings
     const [width, setWidth] = useState(450);
@@ -139,25 +136,9 @@ export default function SVGGenerator() {
         return () => clearTimeout(timer);
     }, [textLines, width, height, pause, repeat, backgroundColor, backgroundOpacity, center, vCenter, border, cursorStyle, deletionBehavior]);
 
-    // Helper functions for speed unit conversion
-    const convertToSecondsPerChar = (value: number, isSecondsPerChar: boolean): number => {
-        return isSecondsPerChar ? value : (value > 0 ? 1 / value : 0.5);
-    };
-
-    const convertFromSecondsPerChar = (value: number, toSecondsPerChar: boolean): number => {
-        return toSecondsPerChar ? value : (value > 0 ? 1 / value : 2);
-    };
-
-    const getSpeedDisplayValue = (speedValue: number, isSecondsPerChar: boolean): number => {
-        return convertFromSecondsPerChar(speedValue, isSecondsPerChar);
-    };
-
-    const handleSpeedChange = (value: number, isSecondsPerChar: boolean): number => {
-        return convertToSecondsPerChar(value, isSecondsPerChar);
-    };
-
-    const toggleSpeedUnit = () => {
-        setSpeedUnitMode(!speedUnitMode);
+    // Helper function to convert char/s to s/char for API compatibility
+    const convertCharsPerSecToSecsPerChar = (charsPerSec: number): number => {
+        return charsPerSec > 0 ? 1 / charsPerSec : 0.5;
     };
 
     const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
@@ -180,8 +161,8 @@ export default function SVGGenerator() {
             color: '#000000',
             fontSize: 28,
             letterSpacing: '0.1em',
-            typingSpeed: 0.5,
-            deleteSpeed: 0.5,
+            typingSpeed: 2,
+            deleteSpeed: 2,
             fontWeight: '400',
             lineHeight: 1.3
         };
@@ -239,6 +220,7 @@ export default function SVGGenerator() {
 
     /**
      * Create a minimal text line object with only non-default values
+     * Convert char/s to s/char for API compatibility
      */
     const createMinimalLine = (line: TextLine): Partial<TextLine> => {
         const minimal: Partial<TextLine> = { text: line.text };
@@ -247,8 +229,8 @@ export default function SVGGenerator() {
         if (line.color !== DEFAULT_VALUES.color) minimal.color = line.color;
         if (line.fontSize !== DEFAULT_VALUES.fontSize) minimal.fontSize = line.fontSize;
         if (line.letterSpacing !== DEFAULT_VALUES.letterSpacing) minimal.letterSpacing = line.letterSpacing;
-        if (line.typingSpeed !== DEFAULT_VALUES.typingSpeed) minimal.typingSpeed = line.typingSpeed;
-        if (line.deleteSpeed !== DEFAULT_VALUES.deleteSpeed) minimal.deleteSpeed = line.deleteSpeed;
+        if (line.typingSpeed !== DEFAULT_VALUES.typingSpeed) minimal.typingSpeed = convertCharsPerSecToSecsPerChar(line.typingSpeed);
+        if (line.deleteSpeed !== DEFAULT_VALUES.deleteSpeed) minimal.deleteSpeed = convertCharsPerSecToSecsPerChar(line.deleteSpeed);
         if (line.fontWeight !== DEFAULT_VALUES.fontWeight) minimal.fontWeight = line.fontWeight;
         if (line.lineHeight !== DEFAULT_VALUES.lineHeight) minimal.lineHeight = line.lineHeight;
         
@@ -535,35 +517,29 @@ export default function SVGGenerator() {
                                                 
                                                 {/* Typing Speed and Delete Speed */}
                                                 <div className="grid grid-cols-2 gap-3">
-                                                    <SpeedInputField 
-                                                        label="Typing Speed" 
+                                                    <InputField 
+                                                        label="Typing Speed (char/s)" 
                                                         type="number" 
                                                         step="0.01"
-                                                        value={getSpeedDisplayValue(line.typingSpeed, speedUnitMode)} 
+                                                        value={line.typingSpeed} 
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                             const inputValue = parseFloat(e.target.value) || 0;
-                                                            const convertedValue = handleSpeedChange(inputValue, speedUnitMode);
-                                                            updateTextLine(index, 'typingSpeed', convertedValue);
+                                                            updateTextLine(index, 'typingSpeed', inputValue);
                                                         }}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
-                                                        speedUnitMode={speedUnitMode}
-                                                        onToggleUnit={toggleSpeedUnit}
                                                     />
-                                                    <SpeedInputField 
-                                                        label="Delete Speed" 
+                                                    <InputField 
+                                                        label="Delete Speed (char/s)" 
                                                         type="number" 
                                                         step="0.01"
-                                                        value={getSpeedDisplayValue(line.deleteSpeed, speedUnitMode)} 
+                                                        value={line.deleteSpeed} 
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                             const inputValue = parseFloat(e.target.value) || 0;
-                                                            const convertedValue = handleSpeedChange(inputValue, speedUnitMode);
-                                                            updateTextLine(index, 'deleteSpeed', convertedValue);
+                                                            updateTextLine(index, 'deleteSpeed', inputValue);
                                                         }}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
-                                                        speedUnitMode={speedUnitMode}
-                                                        onToggleUnit={toggleSpeedUnit}
                                                     />
                                                 </div>
 
@@ -1095,55 +1071,3 @@ const RadioOption = ({
     </div>
 );
 
-// SpeedInputField component with clickable unit toggle
-const SpeedInputField = ({ 
-    label, 
-    type = "number", 
-    value, 
-    onChange, 
-    isDarkMode, 
-    className = "", 
-    step,
-    size = "normal",
-    placeholder,
-    speedUnitMode,
-    onToggleUnit,
-    ...props 
-}: {
-    label: string;
-    type?: string;
-    value: string | number;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    isDarkMode: boolean;
-    className?: string;
-    step?: string;
-    size?: "normal" | "small";
-    placeholder?: string;
-    speedUnitMode: boolean;
-    onToggleUnit: () => void;
-    [key: string]: unknown;
-}) => (
-    <div>
-        <label 
-            className={`block font-medium mb-1 ${size === "small" ? "text-xs" : "text-sm"} ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} cursor-pointer`}
-            onClick={onToggleUnit}
-        >
-            {label} {speedUnitMode ? '(s/char)' : '(char/s)'}
-        </label>
-        <input 
-            type={type}
-            step={step}
-            value={value} 
-            onChange={onChange} 
-            placeholder={placeholder}
-            className={`w-full px-3 rounded-lg border transition-all duration-200 ${
-                size === "small" ? "py-1.5 text-sm" : "py-2"
-            } ${
-                isDarkMode 
-                    ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20 placeholder-gray-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 placeholder-gray-400'
-            } ${className}`}
-            {...props}
-        />
-    </div>
-);
