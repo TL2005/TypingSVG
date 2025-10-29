@@ -43,11 +43,11 @@
 ## 在线演示与预览
 
 [![DEMO_GIF](https://github.com/user-attachments/assets/e37cb962-57d3-430b-a4ed-717f57495243)](https://typingsvg.vercel.app/)
-在线演示地址： https://typingsvg.vercel.app/
+在线演示地址： https://typing-svg-jade.vercel.app/
 
 ## 使用方法
 
-1. 打开网站：[typingsvg.vercel.app](https://typingsvg.vercel.app/)
+1. 打开网站：[typingsvg.vercel.app](https://typing-svg-jade.vercel.app/)
 2. 输入文字（按 Enter 可换行，多空格会被保留）。
 3. 调整字体、颜色、速度和光标样式，实时预览效果。
 4. 复制生成的 URL 或下载 SVG，可嵌入在 README、个人资料、博客或社交平台。
@@ -68,7 +68,7 @@
 前提条件：Node v18+ 与 npm。  
 1. 克隆仓库：
     ```bash
-    git clone https://github.com/whiteSHADOW1234/TypingSVG.git
+    git clone https://github.com/TL2005/TypingSVG.git
     cd TypingSVG
     ```
 2. 安装依赖：
@@ -116,7 +116,7 @@ SVG 通过 `/api/svg` 接口生成，可使用查询参数进行定制：
 
 **示例（易读格式）：**  
 ```
-https://typingsvg.vercel.app/api/svg?lines=[{"text":"Hello,+World!"}]
+https://typing-svg-jade.vercel.app/api/svg?lines=[{"text":"Hello,+World!"}]
 ```
 
 ## 致谢与灵感来源
