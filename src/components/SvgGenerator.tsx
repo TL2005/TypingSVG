@@ -80,10 +80,10 @@ export default function SVGGenerator() {
     const [githubStats, setGithubStats] = useState<GitHubStats>({ stars: 0, loading: true });
     
     const cursorOptions = [
-        { value: 'straight', label: 'Straight', icon: '|' },
-        { value: 'underline', label: 'Underline', icon: '_' },
-        { value: 'block', label: 'Block', icon: '█' },
-        { value: 'blank', label: 'Blank (No Cursor)', icon: '○' }
+        { value: 'straight', label: '竖线', icon: '|' },
+        { value: 'underline', label: '下划线', icon: '_' },
+        { value: 'block', label: '方块', icon: '█' },
+        { value: 'blank', label: '空白（无光标）', icon: '○' }
     ];
 
     const GITHUB_REPO = 'whiteSHADOW1234/TypingSVG';
@@ -281,10 +281,10 @@ export default function SVGGenerator() {
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-            showNotification('SVG downloaded to Downloads folder!');
+            showNotification('SVG 已下载到“下载”文件夹！');
         } catch (error) {
             console.error('Failed to download SVG:', error);
-            showNotification('Failed to download SVG', 'error');
+            showNotification('下载 SVG 失败', 'error');
         }
     };
 
@@ -319,7 +319,7 @@ export default function SVGGenerator() {
                                 <TextCursor className="w-6 h-6 text-white" />
                             </div>
                             <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r ${isDarkMode ? 'from-yellow-400 to-yellow-200' : 'from-blue-600 to-purple-600'} bg-clip-text text-transparent`}>
-                                Typing SVG Generator
+                                打字 SVG 生成器
                             </h1>
                         </div>
                         
@@ -363,7 +363,7 @@ export default function SVGGenerator() {
                                 } shadow-lg`}
                             >
                                 {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                                <span className="text-xs sm:text-sm">{isDarkMode ? 'Light' : 'Dark'}</span>
+                                <span className="text-xs sm:text-sm">{isDarkMode ? '浅色' : '深色'}</span>
                             </button>
                         </div>
                     </div>
@@ -379,7 +379,7 @@ export default function SVGGenerator() {
                         <div className="flex items-center gap-2 mb-4 sm:mb-6">
                             <Palette className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400' : 'text-blue-500'}`} />
                             <h2 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
-                                Configuration
+                                配置
                             </h2>
                         </div>
                         
@@ -388,7 +388,7 @@ export default function SVGGenerator() {
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Text Lines
+                                        文本行
                                     </label>
                                     <button 
                                         onClick={addTextLine} 
@@ -399,7 +399,7 @@ export default function SVGGenerator() {
                                         }`}
                                     >
                                         <Plus className="w-3 h-3" />
-                                        Add Line
+                                        新增一行
                                     </button>
                                 </div>
                                 
@@ -420,7 +420,7 @@ export default function SVGGenerator() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className={`truncate text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    {line.text || `Line ${index + 1}`}
+                                                    {line.text || `第 ${index + 1} 行`}
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -455,7 +455,7 @@ export default function SVGGenerator() {
                                                 {/* Text Input */}
                                                 <div>
                                                     <label className={`block text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                        Text Content
+                                                        文本内容
                                                     </label>
                                                     <textarea
                                                         value={line.text}
@@ -465,7 +465,7 @@ export default function SVGGenerator() {
                                                                 ? 'bg-gray-800 border-gray-600 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500/20' 
                                                                 : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20'
                                                         }`}
-                                                        placeholder={`Line ${index + 1}`}
+                                                        placeholder={`第 ${index + 1} 行`}
                                                         rows={1}
                                                         onInput={(e) => {
                                                             const target = e.target as HTMLTextAreaElement;
@@ -478,7 +478,7 @@ export default function SVGGenerator() {
                                                 {/* Font and Size */}
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <InputField 
-                                                        label="Font Family" 
+                                                        label="字体" 
                                                         type="text" 
                                                         value={line.font} 
                                                         onChange={(e) => updateTextLine(index, 'font', e.target.value)}
@@ -486,7 +486,7 @@ export default function SVGGenerator() {
                                                         size="small"
                                                     />
                                                     <InputField 
-                                                        label="Font Size" 
+                                                        label="字号" 
                                                         type="number" 
                                                         value={line.fontSize} 
                                                         onChange={(e) => updateTextLine(index, 'fontSize', parseInt(e.target.value, 10) || 0)}
@@ -498,27 +498,27 @@ export default function SVGGenerator() {
                                                 {/* Color and Letter Spacing */}
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <ColorField 
-                                                        label="Text Color" 
+                                                        label="文字颜色" 
                                                         value={line.color} 
                                                         onChange={(e) => updateTextLine(index, 'color', e.target.value)}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
                                                     />
                                                     <InputField 
-                                                        label="Letter Spacing" 
+                                                        label="字间距" 
                                                         type="text" 
                                                         value={line.letterSpacing} 
                                                         onChange={(e) => updateTextLine(index, 'letterSpacing', e.target.value)}
                                                         isDarkMode={isDarkMode}
                                                         size="small"
-                                                        placeholder="0.1em, 2px, normal"
+                                                        placeholder="0.1em、2px、normal"
                                                     />
                                                 </div>
                                                 
                                                 {/* Typing Speed and Delete Speed */}
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <InputField 
-                                                        label="Typing Speed (char/s)" 
+                                                        label="打字速度（字符/秒）" 
                                                         type="number" 
                                                         step="0.01"
                                                         value={line.typingSpeed} 
@@ -530,7 +530,7 @@ export default function SVGGenerator() {
                                                         size="small"
                                                     />
                                                     <InputField 
-                                                        label="Delete Speed (char/s)" 
+                                                        label="删除速度（字符/秒）" 
                                                         type="number" 
                                                         step="0.01"
                                                         value={line.deleteSpeed} 
@@ -598,13 +598,13 @@ export default function SVGGenerator() {
                                 {/* Background and Pause */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <ColorField 
-                                        label="Background Color" 
+                                        label="背景颜色" 
                                         value={backgroundColor} 
                                         onChange={(e) => setBackgroundColor(e.target.value)}
                                         isDarkMode={isDarkMode}
                                     />
                                     <InputField 
-                                        label="End Pause (ms)" 
+                                        label="末尾暂停（毫秒）" 
                                         type="number" 
                                         value={pause} 
                                         onChange={(e) => setPause(parseInt(e.target.value, 10) || 0)}
@@ -615,7 +615,7 @@ export default function SVGGenerator() {
                                 {/* Background Opacity */}
                                 <div className="mb-4">
                                     <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Background Opacity
+                                        背景不透明度
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <div className="relative flex-1">
@@ -649,7 +649,7 @@ export default function SVGGenerator() {
                                 {/* Cursor Style - Custom Dropdown */}
                                 <div className="mb-4" data-cursor-dropdown>
                                     <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Cursor Style
+                                        光标样式
                                     </label>
                                     <div className="relative">
                                         <button
@@ -716,19 +716,19 @@ export default function SVGGenerator() {
 
                                 {/* Layout Options */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    <Checkbox label="Center Horizontally" checked={center} onChange={setCenter} isDarkMode={isDarkMode} />
-                                    <Checkbox label="Center Vertically" checked={vCenter} onChange={setVCenter} isDarkMode={isDarkMode} />
+                                    <Checkbox label="水平居中" checked={center} onChange={setCenter} isDarkMode={isDarkMode} />
+                                    <Checkbox label="垂直居中" checked={vCenter} onChange={setVCenter} isDarkMode={isDarkMode} />
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    <Checkbox label="Repeat Animation" checked={repeat} onChange={setRepeat} isDarkMode={isDarkMode} />
-                                    <Checkbox label="Show SVG Border" checked={border} onChange={setBorder} isDarkMode={isDarkMode} />
+                                    <Checkbox label="循环动画" checked={repeat} onChange={setRepeat} isDarkMode={isDarkMode} />
+                                    <Checkbox label="显示 SVG 边框" checked={border} onChange={setBorder} isDarkMode={isDarkMode} />
                                 </div>
 
                                 {/* Delete Behavior */}
                                 <div className={`p-4 rounded-lg border ${isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/50'}`}>
                                     <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Text Lifecycle
+                                        文本生命周期
                                     </label>
                                     <div className="space-y-3">
                                         <RadioOption
@@ -737,8 +737,8 @@ export default function SVGGenerator() {
                                             value="stay"
                                             checked={deletionBehavior === 'stay'}
                                             onChange={() => setDeletionBehavior('stay')}
-                                            label="Stay after typing"
-                                            description="Text remains visible and next line appears below"
+                                            label="输入完成后保留"
+                                            description="文本保持显示，下一行在下面出现"
                                             isDarkMode={isDarkMode}
                                         />
                                         <RadioOption
@@ -747,8 +747,8 @@ export default function SVGGenerator() {
                                             value="backspace"
                                             checked={deletionBehavior === 'backspace'}
                                             onChange={() => setDeletionBehavior('backspace')}
-                                            label="Delete character by character"
-                                            description="Text is deleted one character at a time after pause"
+                                            label="逐字删除"
+                                            description="暂停后按字符逐个删除文本"
                                             isDarkMode={isDarkMode}
                                         />
                                         <RadioOption
@@ -757,8 +757,8 @@ export default function SVGGenerator() {
                                             value="clear"
                                             checked={deletionBehavior === 'clear'}
                                             onChange={() => setDeletionBehavior('clear')}
-                                            label="Clear instantly"
-                                            description="All text disappears at once after pause"
+                                            label="立即清空"
+                                            description="暂停后文本瞬间消失"
                                             isDarkMode={isDarkMode}
                                         />
                                     </div>
@@ -779,7 +779,7 @@ export default function SVGGenerator() {
                                 <div className="flex items-center gap-2">
                                     <Eye className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400' : 'text-blue-500'}`} />
                                     <h2 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
-                                        Live Preview
+                                        实时预览
                                     </h2>
                                 </div>
                                 <button
@@ -791,7 +791,7 @@ export default function SVGGenerator() {
                                     }`}
                                 >
                                     <Download className="w-4 h-4" />
-                                    Download
+                                    下载
                                 </button>
                             </div>
                             <div className={`border-2 border-dashed rounded-xl p-4 sm:p-8 flex items-center justify-center min-h-[150px] sm:min-h-[200px] relative ${
@@ -806,7 +806,7 @@ export default function SVGGenerator() {
                                                 <div className="absolute inset-0 border-2 border-transparent border-t-current rounded-full animate-spin"></div>
                                             </div>
                                             <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                Updating preview...
+                                                正在更新预览…
                                             </span>
                                         </div>
                                     </div>
@@ -815,7 +815,7 @@ export default function SVGGenerator() {
                                 <img 
                                     key={svgUrl} 
                                     src={svgUrl} 
-                                    alt="Generated SVG" 
+                                    alt="生成的 SVG" 
                                     className={`max-w-full h-auto transition-opacity duration-200 ${
                                         isLoading ? 'opacity-30' : 'opacity-100'
                                     }`}
@@ -834,13 +834,13 @@ export default function SVGGenerator() {
                             <div className="flex items-center gap-2 mb-4">
                                 <Code className={`w-5 h-5 ${isDarkMode ? 'text-yellow-400' : 'text-blue-500'}`} />
                                 <h2 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-gray-900'}`}>
-                                    Generated Code
+                                    生成的代码
                                 </h2>
                             </div>
                             <div className="space-y-4">
-                                <UrlBox label="URL" value={fullSvgUrl} isDarkMode={isDarkMode} showNotification={showNotification} />
-                                <UrlBox label="Markdown" value={`[![Typing SVG](${fullSvgUrl})](https://github.com/whiteSHADOW1234/TypingSVG)`} isDarkMode={isDarkMode} showNotification={showNotification} />
-                                <UrlBox label="HTML" value={`<a href="https://github.com/whiteSHADOW1234/TypingSVG"><img src="${fullSvgUrl}" alt="Typing SVG" /></a>`} isDarkMode={isDarkMode} showNotification={showNotification} />
+                                <UrlBox label="链接" value={fullSvgUrl} isDarkMode={isDarkMode} showNotification={showNotification} />
+                                <UrlBox label="Markdown" value={`[![打字 SVG](${fullSvgUrl})](https://github.com/whiteSHADOW1234/TypingSVG)`} isDarkMode={isDarkMode} showNotification={showNotification} />
+                                <UrlBox label="HTML" value={`<a href="https://github.com/whiteSHADOW1234/TypingSVG"><img src="${fullSvgUrl}" alt="打字 SVG" /></a>`} isDarkMode={isDarkMode} showNotification={showNotification} />
                             </div>
                         </div>
                     </div>
@@ -982,11 +982,11 @@ const UrlBox = ({
         try {
             await navigator.clipboard.writeText(value);
             setCopied(true);
-            showNotification(`${label} copied to clipboard!`);
+            showNotification(`${label} 已复制到剪贴板！`);
             setTimeout(() => setCopied(false), 2000);
         } catch (error) {
             console.error('Failed to copy:', error);
-            showNotification('Failed to copy to clipboard', 'error');
+            showNotification('复制到剪贴板失败', 'error');
         }
     };
 
@@ -1013,7 +1013,7 @@ const UrlBox = ({
                             ? 'text-gray-400 hover:bg-gray-600 hover:text-yellow-400' 
                             : 'text-gray-500 hover:bg-gray-200 hover:text-blue-600'
                     }`}
-                    aria-label="Copy to clipboard"
+                    aria-label="复制到剪贴板"
                 >
                     {copied ? (
                         <Check className={`w-4 h-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
